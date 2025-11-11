@@ -2,11 +2,10 @@ import uvicorn
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Dict, List, Optional
-from passlib.context import CryptContext
 
 app = FastAPI(
     title="API de Notas e Tarefas",
-    description="Uma API para criar, alterar e excluir notas e tarefas.",
+    description="Uma API para criar, alterar e excluir notas e tarefas, com registro e login de usuários.",
     version="1.0.0"
 )
 
@@ -33,38 +32,93 @@ class Task(TaskBase):
     """Modelo completo da tarefa (usado para resposta e armazenamento)."""
     id: int
 
-# --- Modelos de Usuário (CORRIGIDOS) ---
+# Modelos para Usuários
+class UserBase(BaseModel):
+    """Modelo base para entrada de dados do usuário (Registro)."""
+    Nome: str
+    LoginUser: str
+    Email: str
+    Senha: str
 
-class UserCreate(BaseModel):
-    """Modelo para ENTRADA de registro (não deve ter ID)."""
-    username: str
-    password: str
-    name: str
-    email: str
+class UserInDB(UserBase):
+    """Modelo completo do usuário (usado para resposta e armazenamento)."""
+    ID: int
 
 class UserLogin(BaseModel):
-    """Modelo para ENTRADA de login (apenas username/password)."""
-    username: str
-    password: str
-    
-class UserOut(BaseModel):
-    """Modelo para SAÍDA (O que a API retorna após registro)."""
-    id: int
-    username: str
+    """Modelo para entrada de dados de login."""
+    LoginUser: str
+    Senha: str
 
 
 # --- "Banco de Dados" em Memória ---
 db_notes: Dict[int, Note] = {}
 db_tasks: Dict[int, Task] = {}
-db_users: Dict[int, Dict] = {} # Armazena os usuários como dicionários
+db_users: Dict[int, UserInDB] = {} # Armazena os usuários
 
 # Contadores para IDs únicos
 note_id_counter = 0
 task_id_counter = 0
 user_id_counter = 0
 
-# Configuração do Passlib
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# --- Endpoints da API para Usuários ---
+
+@app.post("/register/", response_model=UserInDB, status_code=201, summary="Registrar um novo usuário")
+def register_user(user_in: UserBase):
+    """
+    Registra um novo usuário no sistema.
+    - **Nome**: Nome completo do usuário.
+    - **LoginUser**: Nome de usuário único para login.
+    - **Email**: Email único do usuário.
+    - **Senha**: Senha (armazenada como texto plano).
+    """
+    global user_id_counter
+
+    # Verifica se LoginUser ou Email já existem
+    for user in db_users.values():
+        if user.LoginUser == user_in.LoginUser:
+            raise HTTPException(status_code=400, detail="LoginUser já cadastrado")
+        if user.Email == user_in.Email:
+            raise HTTPException(status_code=400, detail="Email já cadastrado")
+
+    user_id_counter += 1
+
+    # Cria o novo usuário com o ID
+    new_user = UserInDB(ID=user_id_counter, **user_in.dict())
+
+    # Armazena no "banco de dados"
+    db_users[user_id_counter] = new_user
+
+    return new_user
+
+@app.post("/login/", summary="Fazer login")
+def LoginUser(user_in: UserLogin):
+    """
+    Autentica um usuário.
+    - **LoginUser**: O nome de usuário.
+    - **Senha**: A senha.
+    """
+    
+    # Procura o usuário pelo LoginUser
+    user_found: Optional[UserInDB] = None
+    for user in db_users.values():
+        if user.LoginUser == user_in.LoginUser:
+            user_found = user
+            break
+            
+    # Verifica se o usuário foi encontrado e se a senha bate
+    if user_found and user_found.Senha == user_in.Senha:
+        return {"message": "Login bem-sucedido!", "user_id": user_found.ID, "nome": user_found.Nome}
+    
+    # Se não encontrou ou a senha está errada
+    raise HTTPException(status_code=401, detail="Login ou senha inválidos")
+
+@app.get("/users/", response_model=List[UserInDB], summary="Listar todos os usuários (apenas para debug)")
+def get_all_users():
+    """
+    Retorna uma lista de todos os usuários cadastrados.
+    """
+    return list(db_users.values())
 
 
 # --- Endpoints da API para Notas ---
@@ -183,57 +237,6 @@ def get_all_tasks():
     Retorna uma lista de todas as tarefas cadastradas.
     """
     return list(db_tasks.values())
-
-
-# --- Endpoints da API para Usuários (CORRIGIDOS) ---
-
-@app.post("/users/register", response_model=UserOut, status_code=201, summary="Registrar um novo usuário")
-def register_user(user_in: UserCreate): # <-- CORRIGIDO
-    """
-    Registra um novo usuário.
-    - **username**: Nome de usuário.
-    - **password**: Senha.
-    - **name**: Nome completo.
-    - **email**: Endereço de e-mail.
-    """
-    global user_id_counter
-
-    if any(u["username"] == user_in.username for u in db_users.values()):
-        raise HTTPException(status_code=400, detail="Usuário já existe")
-
-    hashed_password = pwd_context.hash(user_in.password)
-
-    user_id_counter += 1
-    new_user = {
-        "id": user_id_counter,
-        "username": user_in.username,
-        "password": hashed_password,
-        "name": user_in.name,
-        "email": user_in.email
-    }
-
-    db_users[user_id_counter] = new_user
-
-    return UserOut(id=user_id_counter, username=user_in.username)
-
-@app.post("/users/login", summary="Login do usuário")
-def login_user(login_data: UserLogin): # <-- CORRIGIDO
-    """
-    Autentica um usuário.
-    - **username**: Nome de usuário.
-    - **password**: Senha.
-    """
-    user = next((u for u in db_users.values() if u["username"] == login_data.username), None)
-    if not user:
-        raise HTTPException(status_code=404, detail="Usuário não encontrado")
-
-    if not pwd_context.verify(login_data.password, user["password"]):
-        raise HTTPException(status_code=401, detail="Senha incorreta")
-
-    return {"message": f"Login bem-sucedido! Bem-vindo, {user['username']}."}
-
-
-# --- Ponto de entrada ---
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
