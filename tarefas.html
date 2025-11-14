@@ -8,8 +8,41 @@
   <link rel="stylesheet" href="style/Buscar.css">
   <link rel="stylesheet" href="style/Barra_lateral.css">
   <link rel="stylesheet" href="style/Tarefas.css">
+  <link rel="stylesheet" href="style/Modals.css">
 </head>
 <body>
+  <div id="task-modal-overlay" class="modal-overlay">
+    <div class="modal-content">
+        <button class="modal-close" id="close-task-modal">&times;</button>
+        <h2>Criar tarefas</h2>
+        <form id="create-task-form">
+            <label for="task-title">Título da tarefa</label>
+            <input type="text" id="task-title" name="task-title">
+
+            <label for="task-message">Menssagem da tarefa</label>
+            <textarea id="task-message" name="task-message"></textarea>
+
+            <button type="button" class="modal-btn btn-add-image">Adicionar imagens</button>
+
+            <div class="time-inputs">
+                <div>
+                    <label for="task-days">Dias</label>
+                    <input type="text" id="task-days" name="task-days">
+                </div>
+                <div>
+                    <label for="task-hours">Horas</label>
+                    <input type="text" id="task-hours" name="task-hours">
+                </div>
+                <div>
+                    <label for="task-minutes">Minutos</label>
+                    <input type="text" id="task-minutes" name="task-minutes">
+                </div>
+            </div>
+
+            <button type="submit" class="modal-btn btn-submit-modal">Criar tarefa</button>
+        </form>
+    </div>
+  </div>
   <main style="margin-left:120px; padding:24px;">
     <h1>Tarefas</h1>
     <div data-include="tarefas"></div>
@@ -17,5 +50,6 @@
   </main>
 
   <script src="scripts/load-components.js"></script>
+  <script src="scripts/modals.js"></script> </body>
 </body>
 </html>

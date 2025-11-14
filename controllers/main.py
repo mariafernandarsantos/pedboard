@@ -1,7 +1,19 @@
+# main.py
 import uvicorn
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from typing import Dict, List, Optional
+from fastapi import FastAPI, HTTPException, Depends
+from sqlalchemy.orm import Session
+from typing import List
+from datetime import date 
+
+from db import models, schemas, database
+from database import SessionLocal, engine
+
+from passlib.context import CryptContext
+
+# Cria as tabelas no banco de dados (se não existirem)
+# Este comando agora criará as tabelas Usuario, Pacientes, Acoes, Notas, Tarefas
+models.Base.metadata.create_all(bind=engine)
+
 
 app = FastAPI(
     title="API de Notas e Tarefas",
@@ -9,234 +21,224 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# --- Configuração de Segurança de Senha ---
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# --- Modelos de Dados (Pydantic) ---
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
 
-# Modelos para Notas
-class NoteBase(BaseModel):
-    """Modelo base para entrada de dados de nota."""
-    title: str
-    content: str
+def get_password_hash(password):
+    return pwd_context.hash(password)
 
-class Note(NoteBase):
-    """Modelo completo da nota (usado para resposta e armazenamento)."""
-    id: int
-
-# Modelos para Tarefas
-class TaskBase(BaseModel):
-    """Modelo base para entrada de dados de tarefa."""
-    title: str
-    completed: bool = False
-
-class Task(TaskBase):
-    """Modelo completo da tarefa (usado para resposta e armazenamento)."""
-    id: int
-
-# Modelos para Usuários
-class UserBase(BaseModel):
-    """Modelo base para entrada de dados do usuário (Registro)."""
-    Nome: str
-    LoginUser: str
-    Email: str
-    Senha: str
-
-class UserInDB(UserBase):
-    """Modelo completo do usuário (usado para resposta e armazenamento)."""
-    ID: int
-
-class UserLogin(BaseModel):
-    """Modelo para entrada de dados de login."""
-    LoginUser: str
-    Senha: str
-
-
-# --- "Banco de Dados" em Memória ---
-db_notes: Dict[int, Note] = {}
-db_tasks: Dict[int, Task] = {}
-db_users: Dict[int, UserInDB] = {} # Armazena os usuários
-
-# Contadores para IDs únicos
-note_id_counter = 0
-task_id_counter = 0
-user_id_counter = 0
+# --- Dependência do Banco de Dados ---
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
 # --- Endpoints da API para Usuários ---
 
-@app.post("/register/", response_model=UserInDB, status_code=201, summary="Registrar um novo usuário")
-def register_user(user_in: UserBase):
+@app.post("/register/", response_model=schemas.Usuario, status_code=201, summary="Registrar um novo usuário")
+def register_user(user_in: schemas.UsuarioCreate, db: Session = Depends(get_db)):
     """
-    Registra um novo usuário no sistema.
-    - **Nome**: Nome completo do usuário.
-    - **LoginUser**: Nome de usuário único para login.
-    - **Email**: Email único do usuário.
-    - **Senha**: Senha (armazenada como texto plano).
+    Registra um novo usuário (Atendente) no sistema.
     """
-    global user_id_counter
+    # Verifica se Login_User ou Email já existem
+    db_user_login = db.query(models.Usuario).filter(models.Usuario.Login_User == user_in.Login_User).first()
+    if db_user_login:
+        raise HTTPException(status_code=400, detail="Login_User já cadastrado")
+    
+    db_user_email = db.query(models.Usuario).filter(models.Usuario.Email == user_in.Email).first()
+    if db_user_email:
+        raise HTTPException(status_code=400, detail="Email já cadastrado")
 
-    # Verifica se LoginUser ou Email já existem
-    for user in db_users.values():
-        if user.LoginUser == user_in.LoginUser:
-            raise HTTPException(status_code=400, detail="LoginUser já cadastrado")
-        if user.Email == user_in.Email:
-            raise HTTPException(status_code=400, detail="Email já cadastrado")
+    # Hashea a senha
+    hashed_password = get_password_hash(user_in.Senha)
+    
+    # Cria o novo usuário (usando HashedSenha)
+    db_user = models.Usuario(
+        Nome=user_in.Nome,
+        Login_User=user_in.Login_User,
+        Email=user_in.Email,
+        HashedSenha=hashed_password # Salva o hash, não a senha
+    )
 
-    user_id_counter += 1
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user) # Recarrega o db_user para obter o ID_Atendente
 
-    # Cria o novo usuário com o ID
-    new_user = UserInDB(ID=user_id_counter, **user_in.dict())
-
-    # Armazena no "banco de dados"
-    db_users[user_id_counter] = new_user
-
-    return new_user
+    return db_user
 
 @app.post("/login/", summary="Fazer login")
-def LoginUser(user_in: UserLogin):
+def login_user(user_in: schemas.UsuarioLogin, db: Session = Depends(get_db)):
     """
-    Autentica um usuário.
-    - **LoginUser**: O nome de usuário.
-    - **Senha**: A senha.
+    Autentica um usuário (Atendente).
     """
+    # Procura o usuário pelo Login_User
+    user_found = db.query(models.Usuario).filter(models.Usuario.Login_User == user_in.Login_User).first()
     
-    # Procura o usuário pelo LoginUser
-    user_found: Optional[UserInDB] = None
-    for user in db_users.values():
-        if user.LoginUser == user_in.LoginUser:
-            user_found = user
-            break
-            
     # Verifica se o usuário foi encontrado e se a senha bate
-    if user_found and user_found.Senha == user_in.Senha:
-        return {"message": "Login bem-sucedido!", "user_id": user_found.ID, "nome": user_found.Nome}
-    
-    # Se não encontrou ou a senha está errada
-    raise HTTPException(status_code=401, detail="Login ou senha inválidos")
+    if not user_found or not verify_password(user_in.Senha, user_found.HashedSenha):
+        raise HTTPException(status_code=401, detail="Login ou senha inválidos")
 
-@app.get("/users/", response_model=List[UserInDB], summary="Listar todos os usuários (apenas para debug)")
-def get_all_users():
+    return {"message": "Login bem-sucedido!", "user_id": user_found.ID_Atendente, "nome": user_found.Nome}
+
+@app.get("/users/", response_model=List[schemas.Usuario], summary="Listar todos os usuários")
+def get_all_users(db: Session = Depends(get_db)):
     """
-    Retorna uma lista de todos os usuários cadastrados.
+    Retorna uma lista de todos os usuários (Atendentes) cadastrados.
     """
-    return list(db_users.values())
+    users = db.query(models.Usuario).all()
+    return users
 
 
 # --- Endpoints da API para Notas ---
 
-@app.post("/notes/", response_model=Note, status_code=201, summary="Criar uma nova nota")
-def create_note(note_in: NoteBase):
+@app.post("/notas/", response_model=schemas.Nota, status_code=201, summary="Criar uma nova nota")
+def create_note(note_in: schemas.NotaCreate, db: Session = Depends(get_db)):
     """
-    Cria uma nova nota.
-    - **title**: O título da nota.
-    - **content**: O conteúdo da nota.
+    Cria uma nova nota. A Data_Criacao é definida automaticamente.
     """
-    global note_id_counter
-    note_id_counter += 1
+    # (Opcional) Verificar se o ID_Atendente existe
+    # user = db.query(models.Usuario).filter(models.Usuario.ID_Atendente == note_in.ID_Atendente).first()
+    # if not user:
+    #    raise HTTPException(status_code=404, detail="ID_Atendente não encontrado")
 
-    # Cria a nova nota com o ID
-    new_note = Note(id=note_id_counter, **note_in.dict())
+    # Cria o objeto do modelo SQLAlchemy
+    db_note = models.Notas(
+        Nome=note_in.Nome,
+        Descricao=note_in.Descricao,
+        Status=note_in.Status,
+        ID_Atendente=note_in.ID_Atendente,
+        Data_Criacao=date.today() # Define a data de criação
+    )
+    
+    db.add(db_note)
+    db.commit()
+    db.refresh(db_note) # Pega o ID_Nota gerado pelo banco
+    
+    return db_note
 
-    # Armazena no "banco de dados"
-    db_notes[note_id_counter] = new_note
-
-    return new_note
-
-@app.put("/notes/{note_id}", response_model=Note, summary="Atualizar uma nota existente")
-def update_note(note_id: int, note_in: NoteBase):
+@app.put("/notas/{note_id}", response_model=schemas.Nota, summary="Atualizar uma nota existente")
+def update_note(note_id: int, note_in: schemas.NotaCreate, db: Session = Depends(get_db)):
     """
-    Atualiza uma nota existente pelo ID.
-    - **note_id**: O ID da nota a ser atualizada.
-    - **title**: O novo título da nota.
-    - **content**: O novo conteúdo da nota.
+    Atualiza uma nota existente pelo ID_Nota.
     """
-    if note_id not in db_notes:
+    db_note = db.query(models.Notas).filter(models.Notas.ID_Nota == note_id).first()
+    if not db_note:
         raise HTTPException(status_code=404, detail="Nota não encontrada")
 
-    # Atualiza a nota no "banco de dados"
-    updated_note = Note(id=note_id, **note_in.dict())
-    db_notes[note_id] = updated_note
+    # Atualiza os campos (exceto data de criação)
+    db_note.Nome = note_in.Nome
+    db_note.Descricao = note_in.Descricao
+    db_note.Status = note_in.Status
+    db_note.ID_Atendente = note_in.ID_Atendente # Permite trocar o atendente
+    
+    db.commit()
+    db.refresh(db_note)
+    
+    return db_note
 
-    return updated_note
-
-@app.delete("/notes/{note_id}", status_code=200, summary="Excluir uma nota")
-def delete_note(note_id: int):
+@app.delete("/notas/{note_id}", status_code=200, summary="Excluir uma nota")
+def delete_note(note_id: int, db: Session = Depends(get_db)):
     """
-    Exclui uma nota existente pelo ID.
-    - **note_id**: O ID da nota a ser excluída.
+    Exclui uma nota existente pelo ID_Nota.
     """
-    if note_id not in db_notes:
+    db_note = db.query(models.Notas).filter(models.Notas.ID_Nota == note_id).first()
+    if not db_note:
         raise HTTPException(status_code=404, detail="Nota não encontrada")
 
-    # Remove a nota do "banco de dados"
-    del db_notes[note_id]
+    db.delete(db_note)
+    db.commit()
 
     return {"message": "Nota excluída com sucesso"}
 
-@app.get("/notes/", response_model=List[Note], summary="Listar todas as notas")
-def get_all_notes():
+@app.get("/notas/", response_model=List[schemas.Nota], summary="Listar todas as notas")
+def get_all_notes(db: Session = Depends(get_db)):
     """
     Retorna uma lista de todas as notas cadastradas.
     """
-    return list(db_notes.values())
+    notes = db.query(models.Notas).all()
+    return notes
 
 
 # --- Endpoints da API para Tarefas ---
 
-@app.post("/tasks/", response_model=Task, status_code=201, summary="Criar uma nova tarefa")
-def create_task(task_in: TaskBase):
+@app.post("/tarefas/", response_model=schemas.Tarefa, status_code=201, summary="Criar uma nova tarefa")
+def create_task(task_in: schemas.TarefaCreate, db: Session = Depends(get_db)):
     """
-    Cria uma nova tarefa.
-    - **title**: O título da tarefa.
-    - **completed**: O status da tarefa (opcional, padrão: False).
+    Cria uma nova tarefa. Data_Criacao é definida automaticamente.
+    O campo Imagem (BLOB) é ignorado.
     """
-    global task_id_counter
-    task_id_counter += 1
+    # (Opcional) Você pode adicionar verificações para ID_Acao e ID_Atendente aqui
 
-    # Cria a nova tarefa com o ID
-    new_task = Task(id=task_id_counter, **task_in.dict())
+    db_task = models.Tarefas(
+        Titulo=task_in.Titulo,
+        Nome_Atendente=task_in.Nome_Atendente,
+        Descricao=task_in.Descricao,
+        Status=task_in.Status,
+        Urgencia=task_in.Urgencia,
+        Data_Prazo=task_in.Data_Prazo,
+        ID_Acao=task_in.ID_Acao,
+        ID_Atendente=task_in.ID_Atendente,
+        Data_Criacao=date.today() # Define a data de criação
+        # Imagem (BLOB) não está sendo populado
+    )
+    
+    db.add(db_task)
+    db.commit()
+    db.refresh(db_task)
+    
+    return db_task
 
-    # Armazena no "banco de dados"
-    db_tasks[task_id_counter] = new_task
-
-    return new_task
-
-@app.put("/tasks/{task_id}", response_model=Task, summary="Atualizar uma tarefa existente")
-def update_task(task_id: int, task_in: TaskBase):
+@app.put("/tarefas/{task_id}", response_model=schemas.Tarefa, summary="Atualizar uma tarefa existente")
+def update_task(task_id: int, task_in: schemas.TarefaCreate, db: Session = Depends(get_db)):
     """
-    Atualiza uma tarefa existente pelo ID.
-    - **task_id**: O ID da tarefa a ser atualizada.
-    - **title**: O novo título da tarefa.
-    - **completed**: O novo status da tarefa.
+    Atualiza uma tarefa existente pelo ID_Tarefa.
     """
-    if task_id not in db_tasks:
+    db_task = db.query(models.Tarefas).filter(models.Tarefas.ID_Tarefa == task_id).first()
+    if not db_task:
         raise HTTPException(status_code=404, detail="Tarefa não encontrada")
 
-    # Atualiza a tarefa no "banco de dados"
-    updated_task = Task(id=task_id, **task_in.dict())
-    db_tasks[task_id] = updated_task
+    # Atualiza os campos do objeto
+    db_task.Titulo = task_in.Titulo
+    db_task.Nome_Atendente = task_in.Nome_Atendente
+    db_task.Descricao = task_in.Descricao
+    db_task.Status = task_in.Status
+    db_task.Urgencia = task_in.Urgencia
+    db_task.Data_Prazo = task_in.Data_Prazo
+    db_task.ID_Acao = task_in.ID_Acao
+    db_task.ID_Atendente = task_in.ID_Atendente
+    
+    db.commit()
+    db.refresh(db_task)
+    
+    return db_task
 
-    return updated_task
-
-@app.delete("/tasks/{task_id}", status_code=200, summary="Excluir uma tarefa")
-def delete_task(task_id: int):
+@app.delete("/tarefas/{task_id}", status_code=200, summary="Excluir uma tarefa")
+def delete_task(task_id: int, db: Session = Depends(get_db)):
     """
-    Exclui uma tarefa existente pelo ID.
-    - **task_id**: O ID da tarefa a ser excluída.
+    Exclui uma tarefa existente pelo ID_Tarefa.
     """
-    if task_id not in db_tasks:
+    db_task = db.query(models.Tarefas).filter(models.Tarefas.ID_Tarefa == task_id).first()
+    if not db_task:
         raise HTTPException(status_code=404, detail="Tarefa não encontrada")
 
-    # Remove a tarefa do "banco de dados"
-    del db_tasks[task_id]
+    db.delete(db_task)
+    db.commit()
 
     return {"message": "Tarefa excluída com sucesso"}
 
-@app.get("/tasks/", response_model=List[Task], summary="Listar todas as tarefas")
-def get_all_tasks():
+@app.get("/tarefas/", response_model=List[schemas.Tarefa], summary="Listar todas as tarefas")
+def get_all_tasks(db: Session = Depends(get_db)):
     """
     Retorna uma lista de todas as tarefas cadastradas.
     """
-    return list(db_tasks.values())
+    tasks = db.query(models.Tarefas).all()
+    return tasks
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)

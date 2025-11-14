@@ -1,0 +1,166 @@
+/* style/Modals.css */
+
+/* O fundo escuro (overlay) */
+.modal-overlay {
+    /* Oculto por padrão. Você precisará de JS para mudar para "flex" e exibi-lo. */
+    display: none; 
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7); /* Fundo escuro da imagem */
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* O conteúdo branco do modal (janela) */
+.modal-content {
+    background: #ffffff;
+    padding: 24px 30px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    position: relative;
+    width: 100%;
+    max-width: 400px; /* Largura da janela */
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Botão de Fechar (X) */
+.modal-close {
+    position: absolute;
+    top: -15px; /* Posição fora do card */
+    right: -15px;
+    background: #FF5B5B; /* Vermelho da imagem */
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 24px;
+    font-weight: bold;
+    line-height: 40px;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+.modal-close:hover {
+    opacity: 0.9;
+}
+
+/* Título (Criar tarefas / Criar notas) */
+.modal-content h2 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #111;
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+/* Formulário */
+.modal-content form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.modal-content label {
+    font-size: 15px;
+    color: #333;
+    font-weight: 500;
+    margin-bottom: -8px; /* Puxa para perto do input */
+}
+
+/* Inputs e Textarea */
+.modal-content input[type="text"],
+.modal-content textarea {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid #E0E0E0;
+    border-radius: 12px;
+    font-size: 16px;
+    box-sizing: border-box;
+    font-family: inherit;
+    background: #F9F9F9;
+}
+.modal-content input[type="text"]:focus,
+.modal-content textarea:focus {
+    outline: none;
+    border-color: #AAAAAA;
+    background: #fff;
+}
+
+.modal-content textarea {
+    min-height: 160px; /* Altura da mensagem */
+    resize: vertical;
+}
+
+/* Botões genéricos */
+.modal-content .modal-btn {
+    padding: 15px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+.modal-content .modal-btn:hover {
+    opacity: 0.9;
+}
+
+/* Botão Adicionar Imagens (Tarefa) */
+.btn-add-image {
+    background: #F0F0F0;
+    color: #333;
+    border: 1px solid #E0E0E0;
+}
+
+/* Inputs de Tempo (Tarefa) */
+.time-inputs {
+    display: flex;
+    gap: 12px;
+}
+.time-inputs div {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.time-inputs label {
+    font-size: 13px; /* Label menor */
+    color: #555;
+    text-align: left;
+    margin-bottom: 0;
+}
+.time-inputs input {
+    text-align: center;
+    padding: 12px;
+}
+
+/* Botão Cor (Nota) */
+.btn-color-picker {
+    background: #C4B5FD; /* Roxo/Lavanda da imagem */
+    color: #ffffff;
+}
+
+/* Botão Criar (Verde) */
+.btn-submit-modal {
+    background: #90EE90; /* Verde claro da imagem */
+    color: #111;
+}
+
+/* style/Modals.css */
+
+.modal-overlay {
+    display: none; /* <-- IMPORTANTE: Garanta que isso esteja 'none' */
+    position: fixed;
+    /* ... (resto do seu CSS do modal) ... */
+    align-items: center;
+    justify-content: center;
+}

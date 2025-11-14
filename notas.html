@@ -8,20 +8,33 @@
   <link rel="stylesheet" href="style/Buscar.css">
   <link rel="stylesheet" href="style/Barra_lateral.css">
   <link rel="stylesheet" href="style/Notas.css">
+  <link rel="stylesheet" href="style/Modals.css">
 </head>
 <body>
+  <div id="note-modal-overlay" class="modal-overlay">
+    <div class="modal-content">
+        <button class="modal-close" id="close-note-modal">&times;</button>
+        <h2>Criar notas</h2>
+        <form id="create-note-form">
+            <label for="note-message">Menssagem</label>
+            <textarea id="note-message" name="note-message"></textarea>
+
+            <button type="button" class="modal-btn btn-color-picker">Cor</button>
+
+            <button type="submit" class="modal-btn btn-submit-modal">Criar nota</button>
+        </form>
+    </div>
+  </div>
   <main style="margin-left:120px; padding:24px;">
     <h1>Notas</h1>
 
-    <!-- chama o componente notes (será injetado por load-components.js) -->
     <div data-include="notes"></div>
 
-    <!-- espaço para o conteúdo de notas (lista/cards) -->
     <section id="notes-list" style="margin-top:16px;">
-      <!-- aqui você poderá renderizar as notas -->
     </section>
   </main>
 
   <script src="scripts/load-components.js"></script>
+  <script src="scripts/modals.js"></script> </body>
 </body>
 </html>
