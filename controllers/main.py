@@ -1,4 +1,3 @@
-# main.py
 import uvicorn
 from fastapi import FastAPI, HTTPException, Depends
 from sqlalchemy.orm import Session
@@ -6,29 +5,16 @@ from typing import List
 from datetime import date 
 
 from db import models, schemas, database
-from database import SessionLocal, engine
-
-from passlib.context import CryptContext
+from db.database import SessionLocal, engine
 
 # Cria as tabelas no banco de dados (se não existirem)
-# Este comando agora criará as tabelas Usuario, Pacientes, Acoes, Notas, Tarefas
 models.Base.metadata.create_all(bind=engine)
-
 
 app = FastAPI(
     title="API de Notas e Tarefas",
     description="Uma API para criar, alterar e excluir notas e tarefas, com registro e login de usuários.",
     version="1.0.0"
 )
-
-# --- Configuração de Segurança de Senha ---
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
-
-def get_password_hash(password):
-    return pwd_context.hash(password)
 
 # --- Dependência do Banco de Dados ---
 def get_db():
@@ -55,20 +41,17 @@ def register_user(user_in: schemas.UsuarioCreate, db: Session = Depends(get_db))
     if db_user_email:
         raise HTTPException(status_code=400, detail="Email já cadastrado")
 
-    # Hashea a senha
-    hashed_password = get_password_hash(user_in.Senha)
-    
-    # Cria o novo usuário (usando HashedSenha)
+    # Cria o novo usuário com SENHA EM TEXTO PLANO
     db_user = models.Usuario(
         Nome=user_in.Nome,
         Login_User=user_in.Login_User,
         Email=user_in.Email,
-        HashedSenha=hashed_password # Salva o hash, não a senha
+        Senha=user_in.Senha 
     )
 
     db.add(db_user)
     db.commit()
-    db.refresh(db_user) # Recarrega o db_user para obter o ID_Atendente
+    db.refresh(db_user) 
 
     return db_user
 
@@ -80,8 +63,8 @@ def login_user(user_in: schemas.UsuarioLogin, db: Session = Depends(get_db)):
     # Procura o usuário pelo Login_User
     user_found = db.query(models.Usuario).filter(models.Usuario.Login_User == user_in.Login_User).first()
     
-    # Verifica se o usuário foi encontrado e se a senha bate
-    if not user_found or not verify_password(user_in.Senha, user_found.HashedSenha):
+    # Verifica se o usuário foi encontrado e se a senha é IGUAL (Texto plano)
+    if not user_found or user_found.Senha != user_in.Senha:
         raise HTTPException(status_code=401, detail="Login ou senha inválidos")
 
     return {"message": "Login bem-sucedido!", "user_id": user_found.ID_Atendente, "nome": user_found.Nome}
@@ -100,25 +83,19 @@ def get_all_users(db: Session = Depends(get_db)):
 @app.post("/notas/", response_model=schemas.Nota, status_code=201, summary="Criar uma nova nota")
 def create_note(note_in: schemas.NotaCreate, db: Session = Depends(get_db)):
     """
-    Cria uma nova nota. A Data_Criacao é definida automaticamente.
+    Cria uma nova nota.
     """
-    # (Opcional) Verificar se o ID_Atendente existe
-    # user = db.query(models.Usuario).filter(models.Usuario.ID_Atendente == note_in.ID_Atendente).first()
-    # if not user:
-    #    raise HTTPException(status_code=404, detail="ID_Atendente não encontrado")
-
-    # Cria o objeto do modelo SQLAlchemy
     db_note = models.Notas(
         Nome=note_in.Nome,
         Descricao=note_in.Descricao,
         Status=note_in.Status,
         ID_Atendente=note_in.ID_Atendente,
-        Data_Criacao=date.today() # Define a data de criação
+        Data_Criacao=date.today()
     )
     
     db.add(db_note)
     db.commit()
-    db.refresh(db_note) # Pega o ID_Nota gerado pelo banco
+    db.refresh(db_note)
     
     return db_note
 
@@ -131,11 +108,10 @@ def update_note(note_id: int, note_in: schemas.NotaCreate, db: Session = Depends
     if not db_note:
         raise HTTPException(status_code=404, detail="Nota não encontrada")
 
-    # Atualiza os campos (exceto data de criação)
     db_note.Nome = note_in.Nome
     db_note.Descricao = note_in.Descricao
     db_note.Status = note_in.Status
-    db_note.ID_Atendente = note_in.ID_Atendente # Permite trocar o atendente
+    db_note.ID_Atendente = note_in.ID_Atendente
     
     db.commit()
     db.refresh(db_note)
@@ -170,11 +146,8 @@ def get_all_notes(db: Session = Depends(get_db)):
 @app.post("/tarefas/", response_model=schemas.Tarefa, status_code=201, summary="Criar uma nova tarefa")
 def create_task(task_in: schemas.TarefaCreate, db: Session = Depends(get_db)):
     """
-    Cria uma nova tarefa. Data_Criacao é definida automaticamente.
-    O campo Imagem (BLOB) é ignorado.
+    Cria uma nova tarefa.
     """
-    # (Opcional) Você pode adicionar verificações para ID_Acao e ID_Atendente aqui
-
     db_task = models.Tarefas(
         Titulo=task_in.Titulo,
         Nome_Atendente=task_in.Nome_Atendente,
@@ -184,8 +157,7 @@ def create_task(task_in: schemas.TarefaCreate, db: Session = Depends(get_db)):
         Data_Prazo=task_in.Data_Prazo,
         ID_Acao=task_in.ID_Acao,
         ID_Atendente=task_in.ID_Atendente,
-        Data_Criacao=date.today() # Define a data de criação
-        # Imagem (BLOB) não está sendo populado
+        Data_Criacao=date.today()
     )
     
     db.add(db_task)
@@ -203,7 +175,6 @@ def update_task(task_id: int, task_in: schemas.TarefaCreate, db: Session = Depen
     if not db_task:
         raise HTTPException(status_code=404, detail="Tarefa não encontrada")
 
-    # Atualiza os campos do objeto
     db_task.Titulo = task_in.Titulo
     db_task.Nome_Atendente = task_in.Nome_Atendente
     db_task.Descricao = task_in.Descricao

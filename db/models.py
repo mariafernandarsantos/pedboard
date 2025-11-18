@@ -1,9 +1,6 @@
-# models.py
 from sqlalchemy import Column, Integer, String, Boolean, Date, BLOB, ForeignKey
-from .database import Base
-
-# Importante: Você precisa do tipo 'Date' e 'BLOB'
 from sqlalchemy.types import Date, BLOB
+from .database import Base
 
 class Usuario(Base):
     __tablename__ = "Usuario"
@@ -12,7 +9,7 @@ class Usuario(Base):
     Nome = Column(String(100), nullable=False)
     Login_User = Column(String(25), unique=True, index=True, nullable=False)
     Email = Column(String(75), unique=True, index=True, nullable=False)
-    Senha = Column(String(255), nullable=False) 
+    Senha = Column(String(25), nullable=False) # Senha em texto plano
 
 class Pacientes(Base):
     __tablename__ = "Pacientes"
@@ -57,7 +54,7 @@ class Tarefas(Base):
     Data_Criacao = Column(Date, nullable=False)
     Status = Column(String(20), nullable=False)
     Urgencia = Column(Integer, nullable=False)
-    Imagem = Column(BLOB, nullable=True) 
+    Imagem = Column(BLOB, nullable=True)
     Data_Prazo = Column(Date, nullable=False)
     ID_Acao = Column(Integer, ForeignKey("Acoes.ID_Acao"), nullable=False)
     ID_Atendente = Column(Integer, ForeignKey("Usuario.ID_Atendente"), nullable=False)
