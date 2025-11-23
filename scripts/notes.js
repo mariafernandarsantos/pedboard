@@ -16,7 +16,6 @@ document.getElementById("create-note-form").addEventListener("submit", async (e)
     const newNote = {
         Nome: document.getElementById("note-title").value,
         Descricao: document.getElementById("note-message").value,
-        Status: document.getElementById("note-status").value,
         ID_Atendente: 0
     };
 
