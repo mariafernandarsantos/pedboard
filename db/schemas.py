@@ -1,7 +1,7 @@
 # schemas.py
 from pydantic import BaseModel
 from typing import List, Optional
-from datetime import date # Importante para os campos de data
+from datetime import date, datetime # Importante para os campos de data/hora
 
 # --- Schemas para Usuario (baseado no models.Usuario) ---
 
@@ -40,9 +40,29 @@ class NotaCreate(NotaBase):
 class Nota(NotaBase):
     """Schema para retornar dados da nota."""
     ID_Nota: int
-    Data_Criacao: date
+    Data_Criacao: datetime
     ID_Atendente: int
 
+    class Config:
+        orm_mode = True
+
+
+# --- Schemas para Pacientes ---
+class PacienteBase(BaseModel):
+    Nome: str
+    Idade: int
+    Genero: str
+    Cidade: str
+    Data_Nascimento: date
+    Estado_Civil: str
+    Convenio: str
+    Tipo_Sanguineo: str
+
+class PacienteCreate(PacienteBase):
+    pass
+
+class Paciente(PacienteBase):
+    ID_Paciente: int
     class Config:
         orm_mode = True
 
@@ -54,19 +74,25 @@ class TarefaBase(BaseModel):
     Descricao: str
     Status: str
     Urgencia: int
-    Data_Prazo: date
+    Data_Prazo: Optional[datetime] = None
     
 class TarefaCreate(TarefaBase):
     """Schema para criar uma tarefa. Chaves estrangeiras são obrigatórias."""
-    ID_Acao: int
+    ID_Acao: Optional[int] = 0
     ID_Atendente: int
+    ID_Paciente: Optional[int] = None
+    Acao_Descricao: Optional[str] = None
+    Imagem: Optional[str] = None
 
 class Tarefa(TarefaBase):
     """Schema para retornar dados da tarefa."""
     ID_Tarefa: int
-    Data_Criacao: date
+    Data_Criacao: datetime
+    ID_Paciente: Optional[int] = None
     ID_Acao: int
     ID_Atendente: int
+    Acao_Descricao: Optional[str] = None
+    Imagem: Optional[str] = None
 
     class Config:
         orm_mode = True

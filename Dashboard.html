@@ -23,8 +23,24 @@
                 <label for="task-title">Título da tarefa</label>
                 <input type="text" id="task-title" name="task-title">
 
-                <label for="task-message">Menssagem da tarefa</label>
+                <label for="task-paciente-name">Paciente (nome)</label>
+                <input type="text" id="task-paciente-name" name="task-paciente-name" autocomplete="off" placeholder="Digite nome do paciente">
+                <input type="hidden" id="task-paciente-id" name="task-paciente-id">
+                <div id="task-paciente-suggestions" class="suggestions" style="position:relative;"></div>
+
+                <label for="task-message">Mensagem da tarefa</label>
                 <textarea id="task-message" name="task-message"></textarea>
+
+                <label for="task-nome">Nome do atendente</label>
+                <input type="text" id="task-nome" name="task-nome">
+                <label for="task-atendente-id-visible">ID do atendente</label>
+                <input type="number" id="task-atendente-id-visible" name="task-atendente-id-visible">
+
+                <label for="task-status">Status</label>
+                <select id="task-status" name="task-status">
+                    <option value="pendente">Pendente</option>
+                    <option value="atendendo">Atendendo</option>
+                </select>
 
                 <button type="button" class="modal-btn btn-add-image">Adicionar imagens</button>
 
@@ -42,6 +58,17 @@
                         <input type="text" id="task-minutes" name="task-minutes">
                     </div>
                 </div>
+
+                <label for="task-acao-desc">Descrição da ação (ex: atendimento)</label>
+                <input type="text" id="task-acao-desc" name="task-acao-desc" placeholder="Descreva a ação realizada">
+
+                <label for="task-acao-id">ID da ação (opcional)</label>
+                <input type="number" id="task-acao-id" name="task-acao-id" placeholder="0 para criar nova ação">
+
+                <label for="task-deadline">Data e hora do prazo (opcional)</label>
+                <input type="datetime-local" id="task-deadline" name="task-deadline">
+
+                <input type="hidden" id="task-atendente-id" name="task-atendente-id" value="1">
 
                 <button type="submit" class="modal-btn btn-submit-modal">Criar tarefa</button>
             </form>
@@ -61,8 +88,47 @@
             </form>
         </div>
     </div>       
+    <!-- patient modal (inlined fragment) -->
+    <div id="patient-modal-overlay" class="modal-overlay" style="display:none;">
+        <div class="modal-content">
+            <button class="modal-close" id="close-patient-modal">&times;</button>
+            <h2>Adicionar Paciente</h2>
+            <form id="create-patient-form">
+                <label for="pac-nome">Nome</label>
+                <input type="text" id="pac-nome" name="Nome" required>
+
+                <label for="pac-idade">Idade</label>
+                <input type="number" id="pac-idade" name="Idade" required>
+
+                <label for="pac-genero">Gênero</label>
+                <input type="text" id="pac-genero" name="Genero" required>
+
+                <label for="pac-cidade">Cidade</label>
+                <input type="text" id="pac-cidade" name="Cidade" required>
+
+                <label for="pac-nasc">Data de nascimento</label>
+                <input type="date" id="pac-nasc" name="Data_Nascimento" required>
+
+                <label for="pac-ec">Estado civil</label>
+                <input type="text" id="pac-ec" name="Estado_Civil" required>
+
+                <label for="pac-conv">Convênio</label>
+                <input type="text" id="pac-conv" name="Convenio" required>
+
+                <label for="pac-ts">Tipo sanguíneo</label>
+                <input type="text" id="pac-ts" name="Tipo_Sanguineo" required>
+
+                <button type="submit" class="modal-btn btn-submit-modal">Criar paciente</button>
+            </form>
+        </div>
+    </div>
     <main style="margin-left:120px; padding:24px;">
         <h1>Dashboard</h1>
+
+        <!-- Ações rápidas no topo (Adicionar atendente) -->
+        <div class="top-actions" style="margin:12px 0 20px 0; display:flex; gap:12px; align-items:center;">
+            <button class="patients-add modal-btn" type="button" title="Adicionar atendente" style="padding:8px 12px; border-radius:8px; border:1px solid #e0e0e0; background:#fff; cursor:pointer;">+ Adicionar atendente</button>
+        </div>
 
         <!-- placeholder para o componente de notas -->
         <div data-include="notes"></div>

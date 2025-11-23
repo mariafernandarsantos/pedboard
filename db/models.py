@@ -1,5 +1,5 @@
-from sqlalchemy import Column, Integer, String, Boolean, Date, BLOB, ForeignKey
-from sqlalchemy.types import Date, BLOB
+from sqlalchemy import Column, Integer, String, Boolean, Date, DateTime, BLOB, ForeignKey
+from sqlalchemy.types import Date, DateTime, BLOB
 from .database import Base
 
 class Usuario(Base):
@@ -13,9 +13,8 @@ class Usuario(Base):
 
 class Pacientes(Base):
     __tablename__ = "Pacientes"
-
     ID_Paciente = Column(Integer, primary_key=True, index=True)
-    Nome_Paciente = Column(String(100), nullable=False)
+    Nome = Column(String(100), nullable=False)
     Idade = Column(Integer, nullable=False)
     Genero = Column(String(20), nullable=False)
     Cidade = Column(String(50), nullable=False)
@@ -30,7 +29,7 @@ class Acoes(Base):
     ID_Acao = Column(Integer, primary_key=True, index=True)
     ID_Paciente = Column(Integer, ForeignKey("Pacientes.ID_Paciente"), nullable=False)
     Descricao = Column(String(1000), nullable=False)
-    Data_Criacao = Column(Date, nullable=False)
+    Data_Criacao = Column(DateTime, nullable=False)
     Status = Column(String(20), nullable=False)
     ID_Atendente = Column(Integer, ForeignKey("Usuario.ID_Atendente"), nullable=False)
 
@@ -40,7 +39,7 @@ class Notas(Base):
     ID_Nota = Column(Integer, primary_key=True, index=True)
     Nome = Column(String(100), nullable=False)
     Descricao = Column(String(1000), nullable=False)
-    Data_Criacao = Column(Date, nullable=False)
+    Data_Criacao = Column(DateTime, nullable=False)
     Status = Column(String(20), nullable=False)
     ID_Atendente = Column(Integer, ForeignKey("Usuario.ID_Atendente"), nullable=False)
 
@@ -51,10 +50,12 @@ class Tarefas(Base):
     Titulo = Column(String(30), nullable=False)
     Nome_Atendente = Column(String(100), nullable=False)
     Descricao = Column(String(1000), nullable=False)
-    Data_Criacao = Column(Date, nullable=False)
+    Data_Criacao = Column(DateTime, nullable=False)
     Status = Column(String(20), nullable=False)
     Urgencia = Column(Integer, nullable=False)
     Imagem = Column(BLOB, nullable=True)
-    Data_Prazo = Column(Date, nullable=False)
+    Data_Prazo = Column(DateTime, nullable=False)
+    Acao_Descricao = Column(String(200), nullable=True)
+    ID_Paciente = Column(Integer, ForeignKey("Pacientes.ID_Paciente"), nullable=True)
     ID_Acao = Column(Integer, ForeignKey("Acoes.ID_Acao"), nullable=False)
     ID_Atendente = Column(Integer, ForeignKey("Usuario.ID_Atendente"), nullable=False)
