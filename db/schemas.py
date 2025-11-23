@@ -31,7 +31,7 @@ class Usuario(UsuarioBase):
 class NotaBase(BaseModel):
     Nome: str
     Descricao: str
-    Status: str
+    ID_Atendente: int
 
 class NotaCreate(NotaBase):
     """Schema para criar uma nota. O ID_Atendente é obrigatório."""
