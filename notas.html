@@ -16,13 +16,27 @@
         <button class="modal-close" id="close-note-modal">&times;</button>
         <h2>Criar notas</h2>
         <form id="create-note-form">
-            <label for="note-message">Menssagem</label>
-            <textarea id="note-message" name="note-message"></textarea>
 
-            <button type="button" class="modal-btn btn-color-picker">Cor</button>
-
-            <button type="submit" class="modal-btn btn-submit-modal">Criar nota</button>
+          <label for="note-title">Título</label>
+          <input type="text" id="note-title" name="note-title" required>
+      
+          <label for="note-message">Mensagem</label>
+          <textarea id="note-message" name="note-message" required></textarea>
+      
+          <label for="note-status">Status</label>
+          <select id="note-status" name="note-status">
+              <option value="Aberto">Aberto</option>
+              <option value="Andamento">Em andamento</option>
+              <option value="Concluido">Concluído</option>
+          </select>
+      
+          <input type="hidden" id="note-att-id" value="0">
+      
+          <button type="button" class="modal-btn btn-color-picker">Cor</button>
+      
+          <button type="submit" class="modal-btn btn-submit-modal">Criar nota</button>
         </form>
+
     </div>
   </div>
   <main style="margin-left:120px; padding:24px;">
