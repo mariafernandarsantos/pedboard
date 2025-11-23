@@ -1,5 +1,7 @@
 const API_URL = "http://127.0.0.1:8000";
 
+console.log("✅ notes.js foi carregado");
+
 document.addEventListener("click", (e) => {
     if (e.target.classList.contains("notes-add")) {
         document.getElementById("note-modal-overlay").style.display = "flex";
@@ -16,8 +18,11 @@ document.getElementById("create-note-form").addEventListener("submit", async (e)
     const newNote = {
         Nome: document.getElementById("note-title").value,
         Descricao: document.getElementById("note-message").value,
-        ID_Atendente: 0
+        Status: "Aberto",
+        ID_Atendente: 1
     };
+
+    console.log("Enviando para a API:", newNote);
 
     const res = await fetch(`${API_URL}/notas/`, {
         method: "POST",
@@ -25,9 +30,20 @@ document.getElementById("create-note-form").addEventListener("submit", async (e)
         body: JSON.stringify(newNote)
     });
 
+    if (!res.ok) {
+        const error = await res.text();
+        alert("Erro ao criar nota: " + error);
+        return;
+    }
+
     const data = await res.json();
 
     addNoteToScreen(data);
+
+    // Limpa formulário
+    document.getElementById("create-note-form").reset();
+
+    // Fecha modal
     document.getElementById("note-modal-overlay").style.display = "none";
 });
 

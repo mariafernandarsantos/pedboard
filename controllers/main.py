@@ -3,6 +3,7 @@ from fastapi import FastAPI, HTTPException, Depends
 from sqlalchemy.orm import Session
 from typing import List
 from datetime import date 
+from fastapi.middleware.cors import CORSMiddleware
 
 from db import models, schemas, database
 from db.database import SessionLocal, engine
@@ -14,6 +15,21 @@ app = FastAPI(
     title="API de Notas e Tarefas",
     description="Uma API para criar, alterar e excluir notas e tarefas, com registro e login de usuários.",
     version="1.0.0"
+)
+
+origins = [
+    "http://127.0.0.1:5500",
+    "http://localhost:5500",
+    "http://127.0.0.1",
+    "http://localhost"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,  # em produção coloque seu domínio
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # --- Dependência do Banco de Dados ---
@@ -88,7 +104,7 @@ def create_note(note_in: schemas.NotaCreate, db: Session = Depends(get_db)):
     db_note = models.Notas(
         Nome=note_in.Nome,
         Descricao=note_in.Descricao,
-        Status="Aberto"
+        Status="Aberto",
         ID_Atendente=note_in.ID_Atendente,
         Data_Criacao=date.today()
     )
@@ -211,5 +227,11 @@ def get_all_tasks(db: Session = Depends(get_db)):
     tasks = db.query(models.Tarefas).all()
     return tasks
 
+@app.options("/{full_path:path}")
+async def preflight_handler(full_path: str):
+    return {}
+
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
+
+
