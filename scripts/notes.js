@@ -19,9 +19,12 @@ document.getElementById("create-note-form").addEventListener("submit", async (e)
     const content = document.getElementById("note-message").value;
 
     const newNote = {
-        title: "Nota",      
-        content: content
-    };
+    Nome: document.getElementById("note-title").value,
+    Descricao: document.getElementById("note-message").value,
+    Status: document.getElementById("note-status").value,
+    ID_Atendente: 0
+};
+
 
     const res = await fetch(`${API_URL}/notes/`, {
         method: "POST",
