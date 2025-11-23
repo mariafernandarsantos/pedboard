@@ -88,7 +88,7 @@ def create_note(note_in: schemas.NotaCreate, db: Session = Depends(get_db)):
     db_note = models.Notas(
         Nome=note_in.Nome,
         Descricao=note_in.Descricao,
-        Status=note_in.Status,
+        Status="Aberto"
         ID_Atendente=note_in.ID_Atendente,
         Data_Criacao=date.today()
     )
