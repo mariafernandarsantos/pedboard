@@ -26,7 +26,7 @@ document.getElementById("create-note-form").addEventListener("submit", async (e)
 };
 
 
-    const res = await fetch(`${API_URL}/notes/`, {
+    const res = await fetch(`${API_URL}/notas/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newNote)
@@ -53,7 +53,7 @@ function addNoteToScreen(note) {
 
 
 async function loadNotes() {
-    const res = await fetch(`${API_URL}/notes/`);
+    const res = await fetch(`${API_URL}/notas/`);
     const notes = await res.json();
 
     notes.forEach(n => addNoteToScreen(n));
