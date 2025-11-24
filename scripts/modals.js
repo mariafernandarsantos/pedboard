@@ -102,56 +102,22 @@ document.addEventListener("DOMContentLoaded", () => {
         reader.readAsDataURL(file);
     });
 
-    // Urgência: configura botões no formulário (cores)
+    // Urgência: ativa/desativa botões no formulário (cores)
     function setupUrgencyButtons(form) {
-        const container = document.createElement('div');
-        container.className = 'urgency-buttons';
-        container.innerHTML = `
-            <label>Urgência</label>
-            <div style="display:flex;gap:8px;margin-top:6px;">
-                <button type="button" data-urg="1" style="background:#3b82f6;color:#fff;padding:6px 8px;border-radius:4px;border:none">Azul</button>
-                <button type="button" data-urg="2" style="background:#10b981;color:#fff;padding:6px 8px;border-radius:4px;border:none">Verde</button>
-                <button type="button" data-urg="3" style="background:#f59e0b;color:#fff;padding:6px 8px;border-radius:4px;border:none">Amarelo</button>
-                <button type="button" data-urg="4" style="background:#ef4444;color:#fff;padding:6px 8px;border-radius:4px;border:none">Vermelho</button>
-                <button type="button" data-urg="5" style="background:#7c3aed;color:#fff;padding:6px 8px;border-radius:4px;border:none">Roxo</button>
-            </div>
-            <input type="hidden" name="task-urgency" id="task-urgency" value="3">
-        `;
-        const submitBtn = form.querySelector('.btn-submit-modal');
-        submitBtn.parentNode.insertBefore(container, submitBtn);
-
+        const container = form.querySelector('.urgency-buttons');
+        if (!container) return;
         container.addEventListener('click', (ev) => {
             const b = ev.target.closest('button[data-urg]');
             if (!b) return;
             const val = b.getAttribute('data-urg');
             const hidden = form.querySelector('#task-urgency');
-            hidden.value = val;
+            if (hidden) hidden.value = val;
             container.querySelectorAll('button[data-urg]').forEach(btn => btn.style.opacity = '0.6');
             b.style.opacity = '1';
         });
     }
 
     if (createTaskForm) {
-        const beforeTimeInputs = createTaskForm.querySelector('.time-inputs');
-        const extraHtml = document.createElement('div');
-        extraHtml.innerHTML = `
-            <label for="task-nome">Nome do atendente</label>
-            <input type="text" id="task-nome" name="task-nome" required>
-
-            <label for="task-status">Status</label>
-            <select id="task-status" name="task-status">
-                <option value="pendente">Pendente</option>
-                <option value="atendendo">Atendendo</option>
-            </select>
-
-            <label for="task-deadline">Data e hora do prazo</label>
-            <input type="datetime-local" id="task-deadline" name="task-deadline">
-
-            <input type="hidden" id="task-atendente-id" name="task-atendente-id" value="1">
-            <input type="hidden" id="task-acao-id" name="task-acao-id" value="0">
-        `;
-        beforeTimeInputs.parentNode.insertBefore(extraHtml, beforeTimeInputs);
-
         setupUrgencyButtons(createTaskForm);
 
         // --- Autocomplete / busca de pacientes ---
@@ -286,7 +252,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const closePatientBtn = document.getElementById('close-patient-modal');
     const createPatientForm = document.getElementById('create-patient-form');
 
-    if (closePatientBtn) closePatientBtn.addEventListener('click', () => { if (patientModal) patientModal.style.display = 'none'; });
+    if (closePatientBtn) closePatientBtn.addEventListener('click', (ev) => {
+        ev.preventDefault();
+        if (patientModal) patientModal.style.display = 'none';
+    });
     if (patientModal) {
         patientModal.addEventListener('click', (ev) => { if (ev.target === patientModal) patientModal.style.display = 'none'; });
     }
