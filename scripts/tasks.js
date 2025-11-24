@@ -13,14 +13,18 @@ document.getElementById("close-task-modal").addEventListener("click", () => {
 document.getElementById("create-task-form").addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const title = document.getElementById("task-title").value;
-
     const newTask = {
-        title: title,
-        completed: false
+        Titulo: document.getElementById("task-title").value,
+        Nome_Atendente: "Atendente 0",
+        Descricao: document.getElementById("task-message").value,
+        Status: "Aberto",  
+        Urgencia: parseInt(document.getElementById("task-urgency").value),
+        Data_Prazo: null,
+        ID_Acao: 0,
+        ID_Atendente: 0
     };
 
-    const res = await fetch(`${API_URL}/tasks/`, {
+    const res = await fetch(`${API_URL}/tarefas/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newTask)
@@ -38,16 +42,18 @@ function addTaskToScreen(task) {
     const card = document.createElement("div");
     card.classList.add("task-card");
     card.innerHTML = `
-        <strong>${task.title}</strong>
-        <p>Status: ${task.completed ? "Concluída" : "Pendente"}</p>
-        <small>ID: ${task.id}</small>
+        <h3>${task.Titulo}</h3>
+        <p>${task.Descricao}</p>
+        <p><strong>Status:</strong> ${task.Status}</p>
+        <p><strong>Urgência:</strong> ${task.Urgencia}</p>
+        <small>ID: ${task.ID_Tarefa}</small>
     `;
 
     container.appendChild(card);
 }
 
 async function loadTasks() {
-    const res = await fetch(`${API_URL}/tasks/`);
+    const res = await fetch(`${API_URL}/tarefas/`);
     const tasks = await res.json();
 
     tasks.forEach(t => addTaskToScreen(t));
