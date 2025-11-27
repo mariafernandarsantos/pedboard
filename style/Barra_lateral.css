@@ -70,29 +70,6 @@
     font-size: 13px;
     font-family: 'Montserrat', sans-serif;
     white-space: nowrap;
-    overflow: hidden;    <aside class="sidebar" aria-label="Barra lateral">
-        <div class="sidebar-top">
-            <!-- perfil / topo -->
-            <button class="profile-btn" aria-label="Perfil">
-                <img src="" alt="Perfil">
-            </button>
-    
-            <!-- NOTE: mantemos a barra de busca como elemento independente com classe "search-bar-inline" -->
-            <div class="search-bar-inline" role="search" aria-label="Buscar">
-                <img class="search-icon" src="" alt="Buscar ícone">
-                <input class="search-input" type="text" placeholder="BUSCAR" aria-label="Buscar">
-                <button type="button" class="search-clear hidden" aria-label="Cancelar busca">
-                    <img src="" alt="Cancelar ícone">
-                </button>
-            </div>
-        </div>
-    
-        <!-- ícones de navegação -->
-        <nav class="sidebar-nav" aria-label="Navegação principal">
-            <!-- ...existing nav items... -->
-        </nav>
-    </aside>
-    text-overflow: ellipsis; /* evita que o texto quebre visualmente */
 }
 .sidebar .search-bar .search-clear {
     flex: 0 0 28px;

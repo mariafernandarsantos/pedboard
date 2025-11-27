@@ -1,5 +1,6 @@
+/* Graficos styles */
 .charts-strip {
-    margin-top: 80px;
+    margin-top: 24px; /* reduced spacing so charts don't go so far down */
 }
 
 .charts-strip-inner {
@@ -31,7 +32,10 @@
     display: flex;
     gap: 18px;
     margin-top: 12px;
+    justify-content: center; /* center charts and placeholders */
 }
+
+/* Chart placeholders */
 
 .chart-placeholder {
     flex: 1;
@@ -42,8 +46,9 @@
     min-height: 120px;
 }
 
-@media (max-width:800px) {
+@media (max-width: 800px) {
     .charts-grid {
         flex-direction: column;
     }
+    /* no embed rules needed */
 }
