@@ -2,28 +2,64 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>PedBoard - Tarefas</title>
   <link rel="stylesheet" href="style/Reset_css.css">
+  <!-- <link rel="stylesheet" href="style/Buscar.css"> -->
   <link rel="stylesheet" href="style/Barra_lateral.css">
   <link rel="stylesheet" href="style/Tarefas.css">
   <link rel="stylesheet" href="style/Modals.css">
-  <script src="scripts/auth-guard.js"></script>
 </head>
 <body>
+  <div id="task-modal-overlay" class="modal-overlay">
+    <div class="modal-content">
+        <button class="modal-close" id="close-task-modal">&times;</button>
+        <h2>Criar tarefas</h2>
+        <form id="create-task-form">
+            <label for="task-title">Título da tarefa</label>
+            <input type="text" id="task-title" name="task-title">
 
-  <div data-include="tarefas"></div>
+            <label for="task-message">Menssagem da tarefa</label>
+            <textarea id="task-message" name="task-message"></textarea>
+            <label for="task-urgency">Urgência</label>
+            <select id="task-urgency" name="task-urgency" required>
+                <option value="1">1 - Muito baixa</option>
+                <option value="2">2 - Baixa</option>
+                <option value="3">3 - Média</option>
+                <option value="4">4 - Alta</option>
+                <option value="5">5 - Muito alta</option>
+            </select>
 
-  <main style="margin-left:120px; padding:24px;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <h1>Minhas Tarefas</h1>
-        <button class="tasks-add modal-btn" style="padding:10px 20px; background:#000; color:#fff; border-radius:8px; cursor:pointer;">+ Nova Tarefa</button>
+
+            <button type="button" class="modal-btn btn-add-image">Adicionar imagens</button>
+
+            <div class="time-inputs">
+                <div>
+                    <label for="task-days">Dias</label>
+                    <input type="text" id="task-days" name="task-days">
+                </div>
+                <div>
+                    <label for="task-hours">Horas</label>
+                    <input type="text" id="task-hours" name="task-hours">
+                </div>
+                <div>
+                    <label for="task-minutes">Minutos</label>
+                    <input type="text" id="task-minutes" name="task-minutes">
+                </div>
+            </div>
+
+            <button type="submit" class="modal-btn btn-submit-modal">Criar tarefa</button>
+        </form>
     </div>
-
+  </div>
+  <main style="margin-left:120px; padding:24px;">
+    <h1>Tarefas</h1>
     <div data-include="tarefas"></div>
+    <section id="tasks-list-area" style="margin-top:16px;"></section>
   </main>
 
   <script src="scripts/load-components.js"></script>
-  <script src="scripts/modals.js"></script>
+  <script src="scripts/modals.js"></script> </body>
   <script src="scripts/tasks.js"></script>
 </body>
 </html>

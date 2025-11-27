@@ -55,17 +55,7 @@ class Tarefas(Base):
     Urgencia = Column(Integer, nullable=False)
     Imagem = Column(BLOB, nullable=True)
     Data_Prazo = Column(DateTime, nullable=False)
+    Acao_Descricao = Column(String(200), nullable=True)
+    ID_Paciente = Column(Integer, ForeignKey("Pacientes.ID_Paciente"), nullable=True)
     ID_Acao = Column(Integer, ForeignKey("Acoes.ID_Acao"), nullable=False)
-    ID_Atendente = Column(Integer, ForeignKey("Usuario.ID_Atendente"), nullable=False)
-
-class Registros(Base):
-    __tablename__ = "Registros"
-
-    # Adicionei este ID para o SQLAlchemy conseguir gerenciar a tabela
-    ID_Registro = Column(Integer, primary_key=True, index=True)
-    
-    ID_Acao = Column(Integer, ForeignKey("Acoes.ID_Acao"), nullable=False)
-    ID_Paciente = Column(Integer, ForeignKey("Pacientes.ID_Paciente"), nullable=False)
-    Data_Criacao = Column(Date, nullable=False)
-    Status = Column(String(20), nullable=False)
     ID_Atendente = Column(Integer, ForeignKey("Usuario.ID_Atendente"), nullable=False)

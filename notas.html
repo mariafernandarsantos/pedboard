@@ -2,28 +2,54 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>PedBoard - Notas</title>
   <link rel="stylesheet" href="style/Reset_css.css">
+  <!-- <link rel="stylesheet" href="style/Buscar.css"> -->
   <link rel="stylesheet" href="style/Barra_lateral.css">
   <link rel="stylesheet" href="style/Notas.css">
   <link rel="stylesheet" href="style/Modals.css">
-  <script src="scripts/auth-guard.js"></script>
 </head>
 <body>
+  <div id="note-modal-overlay" class="modal-overlay">
+    <div class="modal-content">
+        <button class="modal-close" id="close-note-modal">&times;</button>
+        <h2>Criar notas</h2>
+        <form id="create-note-form">
 
-  <div data-include="modal-notas"></div>
+          <label for="note-title">Título</label>
+          <input type="text" id="note-title" name="note-title" required>
+      
+          <label for="note-message">Mensagem</label>
+          <textarea id="note-message" name="note-message" required></textarea>
+      
+          <label for="note-status">Status</label>
+          <select id="note-status" name="note-status">
+              <option value="Aberto">Aberto</option>
+              <option value="Andamento">Em andamento</option>
+              <option value="Concluido">Concluído</option>
+          </select>
+          
+          <input type="hidden" id="note-att-id" value="0">
+      
+          <button type="button" class="modal-btn btn-color-picker">Cor</button>
+      
+          <button type="submit" class="modal-btn btn-submit-modal">Criar nota</button>
+        </form>
 
-  <main style="margin-left:120px; padding:24px;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <h1>Minhas Notas</h1>
-        <button class="notes-add modal-btn" style="padding:10px 20px; background:#000; color:#fff; border-radius:8px; cursor:pointer;">+ Nova Nota</button>
     </div>
+  </div>
+  <main style="margin-left:120px; padding:24px;">
+    <h1>Notas</h1>
 
-    <div data-include="lista-notas"></div>
+    <div data-include="notes"></div>
+
+    <section id="notes-list" style="margin-top:16px;">
+    </section>
   </main>
 
   <script src="scripts/load-components.js"></script>
-  <script src="scripts/modals.js"></script>
+  <script src="scripts/modals.js"></script> </body>
   <script src="scripts/notes.js"></script>
 </body>
 </html>
