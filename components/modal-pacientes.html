@@ -1,0 +1,47 @@
+<div id="patient-modal-overlay" class="modal-overlay">
+    <div class="modal-content">
+        <button class="modal-close" id="close-patient-modal">&times;</button>
+        <h2>Adicionar Paciente</h2>
+        <form id="create-patient-form">
+            <label for="pac-nome">Nome</label>
+            <input type="text" id="pac-nome" name="Nome" required>
+
+            <div style="display:flex; gap:10px;">
+                <div style="flex:1;">
+                    <label for="pac-nasc">Data Nasc.</label>
+                    <input type="date" id="pac-nasc" name="Data_Nascimento" required>
+                </div>
+                <div style="width:80px;">
+                    <label for="pac-idade">Idade</label>
+                    <input type="number" id="pac-idade" name="Idade" required>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:10px;">
+                <div style="flex:1;">
+                    <label for="pac-genero">Gênero</label>
+                    <select id="pac-genero" name="Genero" required>
+                        <option value="M">Masculino</option>
+                        <option value="F">Feminino</option>
+                    </select>
+                </div>
+                <div style="flex:1;">
+                    <label for="pac-ec">Est. Civil</label>
+                    <select id="pac-ec" name="Estado_Civil" required>
+                        <option value="Solteiro(a)">Solteiro</option>
+                        <option value="Casado(a)">Casado</option>
+                    </select>
+                </div>
+            </div>
+
+            <label for="pac-cidade">Cidade</label>
+            <input type="text" id="pac-cidade" name="Cidade" required>
+            <label for="pac-conv">Convênio</label>
+            <input type="text" id="pac-conv" name="Convenio" required>
+            <label for="pac-ts">Tipo Sang.</label>
+            <input type="text" id="pac-ts" name="Tipo_Sanguineo" required>
+
+            <button type="submit" class="modal-btn btn-submit-modal">Criar paciente</button>
+        </form>
+    </div>
+</div>

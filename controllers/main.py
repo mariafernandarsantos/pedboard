@@ -3,7 +3,7 @@ from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List
-from datetime import datetime
+from datetime import datetime, date
 import base64
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -45,21 +45,16 @@ def get_db():
 
 # --- Endpoints da API para Usuários ---
 
-@app.post("/register/", response_model=schemas.Usuario, status_code=201, summary="Registrar um novo usuário")
+@app.post("/register/", response_model=schemas.Usuario, status_code=201, summary="Registrar usuário")
 def register_user(user_in: schemas.UsuarioCreate, db: Session = Depends(get_db)):
-    """
-    Registra um novo usuário (Atendente) no sistema.
-    """
-    # Verifica se Login_User ou Email já existem
-    db_user_login = db.query(models.Usuario).filter(models.Usuario.Login_User == user_in.Login_User).first()
-    if db_user_login:
+    # Verifica duplicidade
+    if db.query(models.Usuario).filter(models.Usuario.Login_User == user_in.Login_User).first():
         raise HTTPException(status_code=400, detail="Login_User já cadastrado")
     
-    db_user_email = db.query(models.Usuario).filter(models.Usuario.Email == user_in.Email).first()
-    if db_user_email:
+    if db.query(models.Usuario).filter(models.Usuario.Email == user_in.Email).first():
         raise HTTPException(status_code=400, detail="Email já cadastrado")
 
-    # Cria o novo usuário com SENHA EM TEXTO PLANO
+    # Cria usuário (Senha texto plano)
     db_user = models.Usuario(
         Nome=user_in.Nome,
         Login_User=user_in.Login_User,
@@ -70,30 +65,32 @@ def register_user(user_in: schemas.UsuarioCreate, db: Session = Depends(get_db))
     db.add(db_user)
     db.commit()
     db.refresh(db_user) 
-
     return db_user
 
 @app.post("/login/", summary="Fazer login")
 def login_user(user_in: schemas.UsuarioLogin, db: Session = Depends(get_db)):
     """
-    Autentica um usuário (Atendente).
+    Recebe Login_User e Senha. Verifica no banco. Retorna ID se sucesso.
     """
-    # Procura o usuário pelo Login_User
+    # 1. Busca o usuário no banco pelo Login
     user_found = db.query(models.Usuario).filter(models.Usuario.Login_User == user_in.Login_User).first()
     
-    # Verifica se o usuário foi encontrado e se a senha é IGUAL (Texto plano)
-    if not user_found or user_found.Senha != user_in.Senha:
-        raise HTTPException(status_code=401, detail="Login ou senha inválidos")
+    # 2. Verifica se achou E se a senha bate
+    if not user_found:
+        raise HTTPException(status_code=401, detail="Usuário não encontrado")
+    
+    if user_found.Senha != user_in.Senha:
+        raise HTTPException(status_code=401, detail="Senha incorreta")
 
-    return {"message": "Login bem-sucedido!", "user_id": user_found.ID_Atendente, "nome": user_found.Nome}
+    # 3. Retorna sucesso
+    return {
+        "user_id": user_found.ID_Atendente, 
+        "nome": user_found.Nome
+    }
 
-@app.get("/users/", response_model=List[schemas.Usuario], summary="Listar todos os usuários")
+@app.get("/users/", response_model=List[schemas.Usuario])
 def get_all_users(db: Session = Depends(get_db)):
-    """
-    Retorna uma lista de todos os usuários (Atendentes) cadastrados.
-    """
-    users = db.query(models.Usuario).all()
-    return users
+    return db.query(models.Usuario).all()
 
 
 # --- Endpoints da API para Pacientes ---
@@ -104,7 +101,7 @@ def create_paciente(p_in: schemas.PacienteCreate, db: Session = Depends(get_db))
     Cria um novo paciente.
     """
     db_p = models.Pacientes(
-        Nome=p_in.Nome,
+        Nome_Paciente=p_in.Nome_Paciente,
         Idade=p_in.Idade,
         Genero=p_in.Genero,
         Cidade=p_in.Cidade,
@@ -215,9 +212,7 @@ def create_task(task_in: schemas.TarefaCreate, db: Session = Depends(get_db)):
         Urgencia=task_in.Urgencia,
         Data_Prazo=task_in.Data_Prazo,
         Imagem=imagem_bytes,
-        Acao_Descricao=getattr(task_in, 'Acao_Descricao', None),
         ID_Acao=getattr(task_in, 'ID_Acao', 0) or 0,
-        ID_Paciente=getattr(task_in, 'ID_Paciente', None),
         ID_Atendente=task_in.ID_Atendente,
         Data_Criacao=datetime.utcnow()
     )
@@ -243,8 +238,6 @@ def create_task(task_in: schemas.TarefaCreate, db: Session = Depends(get_db)):
         "Urgencia": db_task.Urgencia,
         "Data_Criacao": db_task.Data_Criacao,
         "Data_Prazo": db_task.Data_Prazo,
-        "Acao_Descricao": db_task.Acao_Descricao,
-        "ID_Paciente": db_task.ID_Paciente,
         "ID_Acao": db_task.ID_Acao,
         "ID_Atendente": db_task.ID_Atendente,
         "Imagem": imagem_base64,
@@ -267,7 +260,6 @@ def update_task(task_id: int, task_in: schemas.TarefaCreate, db: Session = Depen
     db_task.Status = task_in.Status
     db_task.Urgencia = task_in.Urgencia
     db_task.Data_Prazo = task_in.Data_Prazo
-    db_task.Acao_Descricao = getattr(task_in, 'Acao_Descricao', None)
     db_task.ID_Acao = task_in.ID_Acao
     db_task.ID_Atendente = task_in.ID_Atendente
     # Atualiza imagem se fornecida
@@ -341,8 +333,6 @@ def get_all_tasks(db: Session = Depends(get_db)):
             "Urgencia": t.Urgencia,
             "Data_Criacao": t.Data_Criacao,
             "Data_Prazo": t.Data_Prazo,
-            "Acao_Descricao": t.Acao_Descricao,
-            "ID_Paciente": t.ID_Paciente,
             "ID_Acao": t.ID_Acao,
             "ID_Atendente": t.ID_Atendente,
             "Imagem": imagem_base64,
@@ -356,6 +346,30 @@ async def preflight_handler(full_path: str):
 @app.options("/{full_path:path}")
 async def preflight_handler(full_path: str):
     return {}
+
+@app.post("/registros/", response_model=schemas.Registro, status_code=201)
+def create_registro(registro_in: schemas.RegistroCreate, db: Session = Depends(get_db)):
+    """
+    Cria um novo registro de atendimento.
+    """
+    
+    db_registro = models.Registros(
+        ID_Acao=registro_in.ID_Acao,
+        ID_Paciente=registro_in.ID_Paciente,
+        Status=registro_in.Status,
+        ID_Atendente=registro_in.ID_Atendente,
+        Data_Criacao=date.today()
+    )
+    
+    db.add(db_registro)
+    db.commit()
+    db.refresh(db_registro)
+    
+    return db_registro
+
+@app.get("/registros/", response_model=List[schemas.Registro])
+def get_all_registros(db: Session = Depends(get_db)):
+    return db.query(models.Registros).all()
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)

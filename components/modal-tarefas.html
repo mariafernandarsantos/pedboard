@@ -1,0 +1,32 @@
+<div id="task-modal-overlay" class="modal-overlay">
+    <div class="modal-content">
+        <button class="modal-close" id="close-task-modal">&times;</button>
+        <h2>Criar tarefa</h2>
+        <form id="create-task-form">
+            <label for="task-title">Título da tarefa</label>
+            <input type="text" id="task-title" name="task-title" required>
+
+            <label for="task-paciente-name">Paciente (ID ou Nome)</label>
+            <input type="text" id="task-paciente-name" name="task-paciente-name" placeholder="Ex: 1 ou João">
+            
+            <label for="task-message">Descrição da tarefa</label>
+            <textarea id="task-message" name="task-message" required></textarea>
+
+            <label for="task-deadline">Data do prazo</label>
+            <input type="date" id="task-deadline" name="task-deadline" required>
+
+            <div class="urgency-buttons" style="margin:16px 0;">
+                <label>Urgência (1 a 5)</label>
+                <select id="task-urgency" name="task-urgency" style="width:100%; padding:10px; border-radius:8px; margin-top:5px;">
+                    <option value="1">1 - Muito Baixa</option>
+                    <option value="2">2 - Baixa</option>
+                    <option value="3">3 - Média</option>
+                    <option value="4">4 - Alta</option>
+                    <option value="5">5 - Crítica</option>
+                </select>
+            </div>
+
+            <button type="submit" class="modal-btn btn-submit-modal">Criar tarefa</button>
+        </form>
+    </div>
+</div>

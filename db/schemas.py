@@ -49,7 +49,7 @@ class Nota(NotaBase):
 
 # --- Schemas para Pacientes ---
 class PacienteBase(BaseModel):
-    Nome: str
+    Nome_Paciente: str
     Idade: int
     Genero: str
     Cidade: str
@@ -81,7 +81,6 @@ class TarefaCreate(TarefaBase):
     ID_Acao: Optional[int] = 0
     ID_Atendente: int
     ID_Paciente: Optional[int] = None
-    Acao_Descricao: Optional[str] = None
     Imagem: Optional[str] = None
 
 class Tarefa(TarefaBase):
@@ -91,8 +90,25 @@ class Tarefa(TarefaBase):
     ID_Paciente: Optional[int] = None
     ID_Acao: int
     ID_Atendente: int
-    Acao_Descricao: Optional[str] = None
     Imagem: Optional[str] = None
+
+    class Config:
+        orm_mode = True
+
+class RegistroBase(BaseModel):
+    ID_Acao: int
+    ID_Paciente: int
+    Status: str
+
+class RegistroCreate(RegistroBase):
+    """Schema para criar um registro."""
+    ID_Atendente: int
+
+class Registro(RegistroBase):
+    """Schema para resposta."""
+    ID_Registro: int
+    Data_Criacao: date
+    ID_Atendente: int
 
     class Config:
         orm_mode = True

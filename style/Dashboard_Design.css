@@ -1,0 +1,131 @@
+/* style/Dashboard_Design.css */
+
+/* --- Container Geral dos Blocos --- */
+.dashboard-block {
+    background: #fff;
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    position: relative;
+}
+
+.block-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.block-title {
+    font-size: 24px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* --- Cores dos Cards (Classes Utilitárias) --- */
+.bg-purple { background: linear-gradient(135deg, #6a11cb, #2575fc); color: white; } /* Roxo/Azul */
+.bg-red    { background: #C0392B; color: white; } /* Vermelho */
+.bg-green  { background: #96AD36; color: white; } /* Verde Oliva */
+.bg-gold   { background: #D4AC0D; color: white; } /* Amarelo Escuro */
+.bg-blue   { background: #2980B9; color: white; } /* Azul */
+.bg-pink   { background: #8E44AD; color: white; } /* Roxo/Rosa */
+.bg-lime   { background: #58D68D; color: white; } /* Verde Claro */
+
+/* --- Estilo Específico: NOTAS (Scroll Horizontal) --- */
+.notes-container-scroll {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    padding-bottom: 10px; /* Espaço para scrollbar */
+    scrollbar-width: thin;
+}
+
+.card-nota-design {
+    min-width: 280px;
+    max-width: 280px;
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 180px;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.note-header-design {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.note-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.note-body-design p {
+    font-size: 13px;
+    line-height: 1.4;
+    opacity: 0.9;
+    display: -webkit-box;
+    -webkit-line-clamp: 4; /* Limita texto a 4 linhas */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.note-footer-design {
+    margin-top: 15px;
+    font-size: 11px;
+    opacity: 0.7;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* --- Estilo Específico: TAREFAS (Grid) --- */
+.tasks-container-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+.card-tarefa-design {
+    border-radius: 16px;
+    padding: 20px;
+    min-height: 160px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.task-title-design {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.task-desc-design {
+    font-size: 12px;
+    line-height: 1.4;
+    margin-bottom: 12px;
+    opacity: 0.9;
+}
+
+.task-footer-design {
+    border-top: 1px solid rgba(255,255,255,0.2);
+    padding-top: 10px;
+    font-size: 12px;
+    font-weight: 600;
+}
