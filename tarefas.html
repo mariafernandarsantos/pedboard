@@ -4,62 +4,77 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>PedBoard - Tarefas</title>
+  
   <link rel="stylesheet" href="style/Reset_css.css">
-  <!-- <link rel="stylesheet" href="style/Buscar.css"> -->
   <link rel="stylesheet" href="style/Barra_lateral.css">
+  
+  <link rel="stylesheet" href="style/Notas.css">
   <link rel="stylesheet" href="style/Tarefas.css">
   <link rel="stylesheet" href="style/Modals.css">
+  
+  <script src="scripts/auth-guard.js"></script>
 </head>
-<body>
-  <div id="task-modal-overlay" class="modal-overlay">
+<body style="background-color: #F0F2F5;"> <div id="task-modal-overlay" class="modal-overlay">
     <div class="modal-content">
         <button class="modal-close" id="close-task-modal">&times;</button>
         <h2>Criar tarefas</h2>
-        <form id="create-task-form">
-            <label for="task-title">Título da tarefa</label>
-            <input type="text" id="task-title" name="task-title">
+          <form id="create-task-form">
+              <label for="task-title">Título da tarefa</label>
+              <input type="text" id="task-title" name="task-title">
 
-            <label for="task-message">Menssagem da tarefa</label>
-            <textarea id="task-message" name="task-message"></textarea>
-            <label for="task-urgency">Urgência</label>
-            <select id="task-urgency" name="task-urgency" required>
-                <option value="1">1 - Muito baixa</option>
-                <option value="2">2 - Baixa</option>
-                <option value="3">3 - Média</option>
-                <option value="4">4 - Alta</option>
-                <option value="5">5 - Muito alta</option>
-            </select>
+              <label for="task-paciente-select">Paciente</label>
+              <select id="task-paciente-select" name="task-paciente-select" style="width:100%; padding:14px; border-radius:12px; border:1px solid #E0E0E0; background:#F9F9F9; margin-bottom: 16px;">
+                  <option value="">Carregando pacientes...</option>
+              </select>
 
+              <label for="task-message">Mensagem da tarefa</label>
+              <textarea id="task-message" name="task-message"></textarea>
 
-            <button type="button" class="modal-btn btn-add-image">Adicionar imagens</button>
+              <label for="task-acao-desc">Descrição da ação (ex: atendimento)</label>
+              <input type="text" id="task-acao-desc" name="task-acao-desc" placeholder="Descreva a ação realizada">
 
-            <div class="time-inputs">
-                <div>
-                    <label for="task-days">Dias</label>
-                    <input type="text" id="task-days" name="task-days">
-                </div>
-                <div>
-                    <label for="task-hours">Horas</label>
-                    <input type="text" id="task-hours" name="task-hours">
-                </div>
-                <div>
-                    <label for="task-minutes">Minutos</label>
-                    <input type="text" id="task-minutes" name="task-minutes">
-                </div>
-            </div>
+              <label for="task-deadline">Data do prazo</label>
+              <input type="date" id="task-deadline" name="task-deadline">
 
-            <button type="submit" class="modal-btn btn-submit-modal">Criar tarefa</button>
-        </form>
+              <div class="urgency-buttons" style="margin:16px 0;">
+                  <label>Urgência</label>
+                  <div style="display:flex;gap:24px;margin-top:6px;">
+                      <button type="button" data-urg="1" style="background:#3b82f6;color:#fff;padding:6px 8px;border-radius:4px;border:none">1</button>
+                      <button type="button" data-urg="2" style="background:#10b981;color:#fff;padding:6px 8px;border-radius:4px;border:none">2</button>
+                      <button type="button" data-urg="3" style="background:#f59e0b;color:#fff;padding:6px 8px;border-radius:4px;border:none">3</button>
+                      <button type="button" data-urg="4" style="background:#ef4444;color:#fff;padding:6px 8px;border-radius:4px;border:none">4</button>
+                      <button type="button" data-urg="5" style="background:#7c3aed;color:#fff;padding:6px 8px;border-radius:4px;border:none">5</button>
+                  </div>
+                  <input type="hidden" name="task-urgency" id="task-urgency" value="3">
+              </div>
+              <input type="hidden" id="task-edit-id" value="0">
+              <button type="submit" class="modal-btn btn-submit-modal">Criar tarefa</button>
+          </form>
     </div>
   </div>
+
   <main style="margin-left:120px; padding:24px;">
-    <h1>Tarefas</h1>
-    <div data-include="tarefas"></div>
-    <section id="tasks-list-area" style="margin-top:16px;"></section>
+    
+    <section class="dashboard-section-block">
+        <div class="section-header">
+            <div class="section-title">
+                <img src="imagens/tarefas.png" style="width:24px; height:24px;" alt="">
+                Tarefas
+                <span style="font-size:14px; font-weight:400; color:#888; margin-left:10px;">Todas</span>
+            </div>
+            
+            <button class="tasks-add modal-btn" style="width:32px; height:32px; border-radius:50%; background:#E4E6EB; border:none; font-weight:bold; cursor:pointer; font-size:18px;">+</button>
+        </div>
+
+        <div id="tasks-list-area" class="tasks-grid-container">
+            <p style="padding:20px; color:#888;">Carregando tarefas...</p>
+        </div>
+    </section>
+
   </main>
 
   <script src="scripts/load-components.js"></script>
-  <script src="scripts/modals.js"></script> </body>
+  <script src="scripts/modals.js"></script> 
   <script src="scripts/tasks.js"></script>
 </body>
 </html>

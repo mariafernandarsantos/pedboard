@@ -6,46 +6,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>PedBoard - Dashboard</title>
     <link rel="stylesheet" href="style/Reset_css.css">
-    <!-- <link rel="stylesheet" href="style/Buscar.css"> -->
     <link rel="stylesheet" href="style/Barra_lateral.css">
     <link rel="stylesheet" href="style/Notas.css">
     <link rel="stylesheet" href="style/Tarefas.css">
     <link rel="stylesheet" href="style/Graficos.css">
     <link rel="stylesheet" href="style/Modals.css">
+    
+    <script src="scripts/auth-guard.js"></script>
 </head>
 
-<body>
-    <div id="task-modal-overlay" class="modal-overlay">
+<body style="background-color: #F0F2F5;"> <div id="task-modal-overlay" class="modal-overlay">
         <div class="modal-content">
             <button class="modal-close" id="close-task-modal">&times;</button>
+            <input type="hidden" id="task-edit-id" value="0">
             <h2>Criar tarefas</h2>
             <form id="create-task-form">
                 <label for="task-title">Título da tarefa</label>
-                <input type="text" id="task-title" name="task-title">
+                <input type="text" id="task-title" name="task-title" required>
 
-                <label for="task-paciente-name">Paciente (nome)</label>
-                <input type="text" id="task-paciente-name" name="task-paciente-name" autocomplete="off" placeholder="Digite nome do paciente">
-                <input type="hidden" id="task-paciente-id" name="task-paciente-id">
-                <div id="task-paciente-suggestions" class="suggestions" style="position:relative;"></div>
+                <label for="task-paciente-select">Paciente</label>
+                <select id="task-paciente-select" name="task-paciente-select" style="width:100%; padding:14px; border-radius:12px; border:1px solid #E0E0E0; background:#F9F9F9; margin-bottom: 16px;">
+                    <option value="">Carregando pacientes...</option>
+                </select>
 
                 <label for="task-message">Mensagem da tarefa</label>
-                <textarea id="task-message" name="task-message"></textarea>
+                <textarea id="task-message" name="task-message" required></textarea>
 
-                <!-- Removido nome do atendente, ID do atendente, status duplicado -->
-                <!-- Removido campo de status, backend deve definir como pendente -->
-
-                <button type="button" class="modal-btn btn-add-image">Adicionar imagens</button>
-                <!-- Removido campos de dias, horas e minutos -->
-
-                <label for="task-acao-desc">Descrição da ação (ex: atendimento)</label>
+                <label for="task-acao-desc">Descrição da ação</label>
                 <input type="text" id="task-acao-desc" name="task-acao-desc" placeholder="Descreva a ação realizada">
 
-                <!-- Removido campo ID da ação -->
-
                 <label for="task-deadline">Data do prazo</label>
-                <input type="date" id="task-deadline" name="task-deadline">
-
-                <!-- Removido campo oculto de ID do atendente -->
+                <input type="date" id="task-deadline" name="task-deadline" required>
 
                 <div class="urgency-buttons" style="margin:16px 0;">
                     <label>Urgência</label>
@@ -59,24 +50,36 @@
                     <input type="hidden" name="task-urgency" id="task-urgency" value="3">
                 </div>
                 <button type="submit" class="modal-btn btn-submit-modal">Criar tarefa</button>
+                <input type="hidden" id="task-edit-id" value="0">
             </form>
         </div>
     </div>   
+
     <div id="note-modal-overlay" class="modal-overlay">
         <div class="modal-content">
             <button class="modal-close" id="close-note-modal">&times;</button>
             <h2>Criar notas</h2>
             <form id="create-note-form">
-                <label for="note-message">Menssagem</label>
-                <textarea id="note-message" name="note-message"></textarea>
-
-                <button type="button" class="modal-btn btn-color-picker">Cor</button>
-
+                <label for="note-title">Título</label>
+                <input type="text" id="note-title" name="note-title" required>
+            
+                <label for="note-message">Mensagem</label>
+                <textarea id="note-message" name="note-message" required></textarea>
+            
+                <label for="note-status">Status</label>
+                <select id="note-status" name="note-status">
+                    <option value="Aberto">Aberto</option>
+                    <option value="Andamento">Em andamento</option>
+                    <option value="Concluido">Concluído</option>
+                </select>
+                
+                <input type="hidden" id="note-att-id" value="0">
+            
                 <button type="submit" class="modal-btn btn-submit-modal">Criar nota</button>
             </form>
         </div>
     </div>       
-    <!-- patient modal (inlined fragment) -->
+
     <div id="patient-modal-overlay" class="modal-overlay" style="display:none;">
         <div class="modal-content">
             <button class="modal-close" id="close-patient-modal">&times;</button>
@@ -133,27 +136,66 @@
             </form>
         </div>
     </div>
+
     <main style="margin-left:120px; padding:24px;">
         <h1>Dashboard</h1>
 
-        <!-- Ações rápidas no topo (Adicionar atendente) -->
         <div class="top-actions" style="margin:12px 0 20px 0; display:flex; gap:12px; align-items:center;">
-            <button class="patients-add modal-btn" type="button" title="Adicionar paciente" style="padding:8px 12px; border-radius:8px; border:1px solid #e0e0e0; background:#fff; cursor:pointer;">+ Adicionar paciente</button>
+            <button class="patients-add modal-btn" type="button" style="padding:8px 12px; border-radius:8px; border:1px solid #e0e0e0; background:#fff; cursor:pointer;">+ Adicionar paciente</button>
         </div>
 
-        <!-- placeholder para o componente de notas -->
-        <div data-include="notes"></div>
+        <section class="dashboard-section-block">
+            <div class="section-header">
+                <div class="section-title">
+                    <img src="imagens/notas.png" style="width:24px; height:24px;" alt="">
+                    Notas
+                </div>
+                <button class="notes-add modal-btn" style="width:32px; height:32px; border-radius:50%; background:#E4E6EB; border:none; font-weight:bold; cursor:pointer; font-size:18px;">+</button>
+            </div>
 
-        <!-- placeholder para o componente de tarefas -->
-        <div data-include="tarefas"></div>
+            <div id="notes-list" class="notes-scroll-container">
+            </div>
+        </section>
 
-                <!-- placeholder para o componente de gráficos -->
-                <div data-include="graficos"></div>
+        <section class="dashboard-section-block">
+            <div class="section-header">
+                <div class="section-title">
+                    <img src="imagens/tarefas.png" style="width:24px; height:24px;" alt="">
+                    Tarefas
+                </div>
+                <button class="tasks-add modal-btn" style="width:32px; height:32px; border-radius:50%; background:#E4E6EB; border:none; font-weight:bold; cursor:pointer; font-size:18px;">+</button>
+            </div>
+
+            <div id="tasks-list-area" class="tasks-grid-container">
+            </div>
+        </section>
+
+        <section class="dashboard-section-block">
+            <div class="section-header">
+                <div class="section-title">
+                    <img src="imagens/perfil.png" style="width:24px; height:24px;" alt="">
+                    Atendimentos
+                </div>
+                
+                <button class="btn-add-registro modal-btn" style="width:32px; height:32px; border-radius:50%; background:#E4E6EB; border:none; font-weight:bold; cursor:pointer; font-size:18px;">+</button>
+            </div>
+
+            <div id="registros-list" class="tasks-grid-container">
+                <p style="padding:20px; color:#888;">Carregando atendimentos...</p>
+            </div>
+        </section>
+        <div data-include="graficos"></div>
 
     </main>
 
     <script src="scripts/load-components.js"></script>
     <script src="scripts/modals.js"></script> 
+    
+    <script src="scripts/notes.js"></script>
+    <script src="scripts/tasks.js"></script>
+    <script src="scripts/pacientes.js"></script>
+    <script src="scripts/atendimentos.js"></script>
+
 </body>
 
 </html>

@@ -1,9 +1,9 @@
-// scripts/auth.js
+
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('login-form');
     const registerForm = document.getElementById('register-form');
 
-    const apiBase = 'http://127.0.0.1:8000'; // Ajuste se sua API estiver em outro host/porta
+    const apiBase = 'http://127.0.0.1:8000'; 
 
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {

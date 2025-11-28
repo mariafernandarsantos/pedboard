@@ -9,7 +9,6 @@
     document.body.insertAdjacentHTML('afterbegin', sidebarHtml);
     console.log('[pedboard] sidebar injetada');
 
-    // injetar fragments solicitados (<div data-include="name">)
     const includes = Array.from(document.querySelectorAll('[data-include]'));
     for (const el of includes) {
       const name = el.dataset.include;
@@ -25,25 +24,6 @@
         console.warn('[pedboard] erro ao injetar', path, err);
       }
     }
-
-    // carregar scripts de ícones (opcional), aguardar carregamento sequencial
-    // const iconScripts = [
-    //   'scripts/icons/icon-dashboard.js',
-    //   'scripts/icons/icon-tarefas.js',
-    //   'scripts/icons/icon-graficos.js',
-    //   'scripts/icons/icon-notas.js',
-    //   'scripts/icons/icon-calendario.js',
-    //   'scripts/icons/icon-config.js'
-    // ];
-    // for (const src of iconScripts) {
-    //   await new Promise(resolve => {
-    //     const s = document.createElement('script');
-    //     s.src = src;
-    //     s.onload = () => { console.log('[pedboard] loaded', src); resolve(); };
-    //     s.onerror = () => { console.warn('[pedboard] failed to load', src); resolve(); };
-    //     document.body.appendChild(s);
-    //   });
-    // }
 
     // carregar controller da sidebar e inicializar
     await new Promise(resolve => {

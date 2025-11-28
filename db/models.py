@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, Date, DateTime, BLOB, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, Date, DateTime, BLOB, ForeignKey, event
 from sqlalchemy.types import Date, DateTime, BLOB
 from .database import Base
 
@@ -27,11 +27,17 @@ class Acoes(Base):
     __tablename__ = "Acoes"
 
     ID_Acao = Column(Integer, primary_key=True, index=True)
-    ID_Paciente = Column(Integer, ForeignKey("Pacientes.ID_Paciente"), nullable=False)
-    Descricao = Column(String(1000), nullable=False)
-    Data_Criacao = Column(DateTime, nullable=False)
-    Status = Column(String(20), nullable=False)
-    ID_Atendente = Column(Integer, ForeignKey("Usuario.ID_Atendente"), nullable=False)
+    Nome_Acao = Column(String(50), nullable=False) 
+
+# --- Lógica para Popular Automaticamente ---
+def insert_initial_acoes(target, connection, **kw):
+    connection.execute(target.insert(), [
+        {'ID_Acao': 1, 'Nome_Acao': 'Cirurgia'},
+        {'ID_Acao': 2, 'Nome_Acao': 'Exame'},
+        {'ID_Acao': 3, 'Nome_Acao': 'Consulta'}
+    ])
+
+event.listen(Acoes.__table__, 'after_create', insert_initial_acoes)
 
 class Notas(Base):
     __tablename__ = "Notas"
@@ -53,9 +59,17 @@ class Tarefas(Base):
     Data_Criacao = Column(DateTime, nullable=False)
     Status = Column(String(20), nullable=False)
     Urgencia = Column(Integer, nullable=False)
-    Imagem = Column(BLOB, nullable=True)
     Data_Prazo = Column(DateTime, nullable=False)
     Acao_Descricao = Column(String(200), nullable=True)
     ID_Paciente = Column(Integer, ForeignKey("Pacientes.ID_Paciente"), nullable=True)
+    ID_Atendente = Column(Integer, ForeignKey("Usuario.ID_Atendente"), nullable=False)
+
+class Registros(Base):
+    __tablename__ = "Registros"
+
+    ID_Registro = Column(Integer, primary_key=True, index=True)
     ID_Acao = Column(Integer, ForeignKey("Acoes.ID_Acao"), nullable=False)
+    ID_Paciente = Column(Integer, ForeignKey("Pacientes.ID_Paciente"), nullable=False)
+    Data_Criacao = Column(Date, nullable=False)
+    Status = Column(String(20), nullable=False)
     ID_Atendente = Column(Integer, ForeignKey("Usuario.ID_Atendente"), nullable=False)

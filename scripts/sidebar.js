@@ -43,8 +43,6 @@
         // marca o clicado como ativo + invertido
         el.classList.add('active', 'inverted');
 
-        // Se são <a> e você navega para outra página, a classe será perdida no reload.
-        // Se quiser persistir, posso salvar em localStorage e reaplicar na próxima página.
       });
     });
 

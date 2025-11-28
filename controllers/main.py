@@ -3,7 +3,7 @@ from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List
-from datetime import datetime
+from datetime import datetime, date
 import base64
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -28,7 +28,7 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,  # em produção coloque seu domínio
+    allow_origins=origins,  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -59,7 +59,7 @@ def register_user(user_in: schemas.UsuarioCreate, db: Session = Depends(get_db))
     if db_user_email:
         raise HTTPException(status_code=400, detail="Email já cadastrado")
 
-    # Cria o novo usuário com SENHA EM TEXTO PLANO
+    # Cria o novo usuário  
     db_user = models.Usuario(
         Nome=user_in.Nome,
         Login_User=user_in.Login_User,
@@ -81,7 +81,7 @@ def login_user(user_in: schemas.UsuarioLogin, db: Session = Depends(get_db)):
     # Procura o usuário pelo Login_User
     user_found = db.query(models.Usuario).filter(models.Usuario.Login_User == user_in.Login_User).first()
     
-    # Verifica se o usuário foi encontrado e se a senha é IGUAL (Texto plano)
+    # Verifica se o usuário foi encontrado e se a senha é IGUAL 
     if not user_found or user_found.Senha != user_in.Senha:
         raise HTTPException(status_code=401, detail="Login ou senha inválidos")
 
@@ -119,14 +119,12 @@ def create_paciente(p_in: schemas.PacienteCreate, db: Session = Depends(get_db))
     return db_p
 
 
-@app.get("/pacientes/search", response_model=List[schemas.Paciente], summary="Buscar pacientes por nome")
-def search_pacientes(query: str, db: Session = Depends(get_db)):
+@app.get("/pacientes/", response_model=List[schemas.Paciente], summary="Listar todos os pacientes")
+def get_all_pacientes(db: Session = Depends(get_db)):
     """
-    Busca pacientes cujo nome contenha o termo (case-insensitive).
+    Retorna a lista completa de pacientes.
     """
-    q = f"%{query}%"
-    results = db.query(models.Pacientes).filter(models.Pacientes.Nome.ilike(q)).limit(50).all()
-    return results
+    return db.query(models.Pacientes).all()
 
 
 # --- Endpoints da API para Notas ---
@@ -141,7 +139,7 @@ def create_note(note_in: schemas.NotaCreate, db: Session = Depends(get_db)):
         Descricao=note_in.Descricao,
         Status="Aberto",
         ID_Atendente=note_in.ID_Atendente,
-        Data_Criacao=datetime.utcnow()
+        Data_Criacao=date.today()
     )
     
     db.add(db_note)
@@ -151,18 +149,23 @@ def create_note(note_in: schemas.NotaCreate, db: Session = Depends(get_db)):
     return db_note
 
 @app.put("/notas/{note_id}", response_model=schemas.Nota, summary="Atualizar uma nota existente")
-def update_note(note_id: int, note_in: schemas.NotaCreate, db: Session = Depends(get_db)):
+def update_note(note_id: int, note_in: schemas.NotaCreate, user_id: int, db: Session = Depends(get_db)):
     """
-    Atualiza uma nota existente pelo ID_Nota.
+    Atualiza uma nota. Exige o user_id na URL (query param) para verificar permissão.
+    Exemplo: /notas/1?user_id=5
     """
     db_note = db.query(models.Notas).filter(models.Notas.ID_Nota == note_id).first()
+    
     if not db_note:
         raise HTTPException(status_code=404, detail="Nota não encontrada")
+    
+    if db_note.ID_Atendente != user_id:
+        raise HTTPException(status_code=403, detail="Você não tem permissão para alterar esta nota.")
 
+    # Atualiza os campos
     db_note.Nome = note_in.Nome
     db_note.Descricao = note_in.Descricao
     db_note.Status = note_in.Status
-    db_note.ID_Atendente = note_in.ID_Atendente
     
     db.commit()
     db.refresh(db_note)
@@ -170,27 +173,51 @@ def update_note(note_id: int, note_in: schemas.NotaCreate, db: Session = Depends
     return db_note
 
 @app.delete("/notas/{note_id}", status_code=200, summary="Excluir uma nota")
-def delete_note(note_id: int, db: Session = Depends(get_db)):
+def delete_note(note_id: int, user_id: int, db: Session = Depends(get_db)):
     """
-    Exclui uma nota existente pelo ID_Nota.
+    Exclui uma nota. Exige user_id para permissão.
     """
     db_note = db.query(models.Notas).filter(models.Notas.ID_Nota == note_id).first()
+    
     if not db_note:
         raise HTTPException(status_code=404, detail="Nota não encontrada")
+
+    if db_note.ID_Atendente != user_id:
+        raise HTTPException(status_code=403, detail="Você não tem permissão para excluir esta nota.")
 
     db.delete(db_note)
     db.commit()
 
     return {"message": "Nota excluída com sucesso"}
 
-@app.get("/notas/", response_model=List[schemas.Nota], summary="Listar todas as notas")
+@app.get("/notas/", response_model=List[schemas.NotaDisplay])
 def get_all_notes(db: Session = Depends(get_db)):
     """
-    Retorna uma lista de todas as notas cadastradas.
+    Lista todas as notas juntando com a tabela de usuários para pegar o nome.
     """
-    notes = db.query(models.Notas).all()
-    return notes
+    #  Seleciona Nota e Usuario onde os IDs batem
+    results = db.query(models.Notas, models.Usuario).join(
+        models.Usuario, 
+        models.Notas.ID_Atendente == models.Usuario.ID_Atendente
+    ).all()
 
+    lista_completa = []
+    
+    # Itera sobre os resultados (que vêm em pares: nota, usuario)
+    for nota, usuario in results:
+        lista_completa.append({
+            "ID_Nota": nota.ID_Nota,
+            "Nome": nota.Nome,
+            "Descricao": nota.Descricao,
+            "Status": nota.Status,
+            "Data_Criacao": nota.Data_Criacao,
+            "ID_Atendente": nota.ID_Atendente,
+            # Pega esses dados do objeto usuario
+            "Nome_Atendente": usuario.Nome,
+            "Login_Atendente": usuario.Login_User 
+        })
+
+    return lista_completa
 
 # --- Endpoints da API para Tarefas ---
 
@@ -199,13 +226,7 @@ def create_task(task_in: schemas.TarefaCreate, db: Session = Depends(get_db)):
     """
     Cria uma nova tarefa.
     """
-    # Decodifica imagem base64 (se enviada) para bytes
-    imagem_bytes = None
-    if getattr(task_in, 'Imagem', None):
-        try:
-            imagem_bytes = base64.b64decode(task_in.Imagem)
-        except Exception:
-            raise HTTPException(status_code=400, detail="Imagem inválida (esperado base64)")
+
 
     db_task = models.Tarefas(
         Titulo=task_in.Titulo,
@@ -214,9 +235,7 @@ def create_task(task_in: schemas.TarefaCreate, db: Session = Depends(get_db)):
         Status=task_in.Status,
         Urgencia=task_in.Urgencia,
         Data_Prazo=task_in.Data_Prazo,
-        Imagem=imagem_bytes,
         Acao_Descricao=getattr(task_in, 'Acao_Descricao', None),
-        ID_Acao=getattr(task_in, 'ID_Acao', 0) or 0,
         ID_Paciente=getattr(task_in, 'ID_Paciente', None),
         ID_Atendente=task_in.ID_Atendente,
         Data_Criacao=datetime.utcnow()
@@ -225,14 +244,6 @@ def create_task(task_in: schemas.TarefaCreate, db: Session = Depends(get_db)):
     db.add(db_task)
     db.commit()
     db.refresh(db_task)
-    
-    # Prepara resposta convertendo imagem para base64 (se existir)
-    imagem_base64 = None
-    if db_task.Imagem:
-        try:
-            imagem_base64 = base64.b64encode(db_task.Imagem).decode('utf-8')
-        except Exception:
-            imagem_base64 = None
 
     resp = {
         "ID_Tarefa": db_task.ID_Tarefa,
@@ -245,49 +256,45 @@ def create_task(task_in: schemas.TarefaCreate, db: Session = Depends(get_db)):
         "Data_Prazo": db_task.Data_Prazo,
         "Acao_Descricao": db_task.Acao_Descricao,
         "ID_Paciente": db_task.ID_Paciente,
-        "ID_Acao": db_task.ID_Acao,
         "ID_Atendente": db_task.ID_Atendente,
-        "Imagem": imagem_base64,
     }
 
     return resp
 
 @app.put("/tarefas/{task_id}", response_model=schemas.Tarefa, summary="Atualizar uma tarefa existente")
-def update_task(task_id: int, task_in: schemas.TarefaCreate, db: Session = Depends(get_db)):
+def update_task(task_id: int, task_in: schemas.TarefaCreate, user_id: int, db: Session = Depends(get_db)):
     """
-    Atualiza uma tarefa existente pelo ID_Tarefa.
+    Atualiza uma tarefa. Exige user_id para permissão.
     """
     db_task = db.query(models.Tarefas).filter(models.Tarefas.ID_Tarefa == task_id).first()
+    
     if not db_task:
         raise HTTPException(status_code=404, detail="Tarefa não encontrada")
 
+    # VERIFICAÇÃO DE PERMISSÃO
+    if db_task.ID_Atendente != user_id:
+        raise HTTPException(status_code=403, detail="Você não tem permissão para alterar esta tarefa.")
+
+    # Atualiza campos
     db_task.Titulo = task_in.Titulo
     db_task.Nome_Atendente = task_in.Nome_Atendente
     db_task.Descricao = task_in.Descricao
     db_task.Status = task_in.Status
     db_task.Urgencia = task_in.Urgencia
     db_task.Data_Prazo = task_in.Data_Prazo
-    db_task.Acao_Descricao = getattr(task_in, 'Acao_Descricao', None)
-    db_task.ID_Acao = task_in.ID_Acao
-    db_task.ID_Atendente = task_in.ID_Atendente
-    # Atualiza imagem se fornecida
+    
+    # Atualiza imagem apenas se enviada
     if getattr(task_in, 'Imagem', None):
         try:
             db_task.Imagem = base64.b64decode(task_in.Imagem)
-        except Exception:
-            raise HTTPException(status_code=400, detail="Imagem inválida (esperado base64)")
+        except:
+            pass
 
     db.commit()
     db.refresh(db_task)
 
-    imagem_base64 = None
-    if db_task.Imagem:
-        try:
-            imagem_base64 = base64.b64encode(db_task.Imagem).decode('utf-8')
-        except Exception:
-            imagem_base64 = None
-
-    resp = {
+    # Retorna dicionário manual para incluir a imagem processada
+    return {
         "ID_Tarefa": db_task.ID_Tarefa,
         "Titulo": db_task.Titulo,
         "Nome_Atendente": db_task.Nome_Atendente,
@@ -296,21 +303,21 @@ def update_task(task_id: int, task_in: schemas.TarefaCreate, db: Session = Depen
         "Urgencia": db_task.Urgencia,
         "Data_Criacao": db_task.Data_Criacao,
         "Data_Prazo": db_task.Data_Prazo,
-        "ID_Acao": db_task.ID_Acao,
-        "ID_Atendente": db_task.ID_Atendente,
-        "Imagem": imagem_base64,
+        "ID_Atendente": db_task.ID_Atendente
     }
 
-    return resp
-
 @app.delete("/tarefas/{task_id}", status_code=200, summary="Excluir uma tarefa")
-def delete_task(task_id: int, db: Session = Depends(get_db)):
+def delete_task(task_id: int, user_id: int, db: Session = Depends(get_db)):
     """
-    Exclui uma tarefa existente pelo ID_Tarefa.
+    Exclui uma tarefa. Exige user_id para permissão.
     """
     db_task = db.query(models.Tarefas).filter(models.Tarefas.ID_Tarefa == task_id).first()
+    
     if not db_task:
         raise HTTPException(status_code=404, detail="Tarefa não encontrada")
+
+    if db_task.ID_Atendente != user_id:
+        raise HTTPException(status_code=403, detail="Você não tem permissão para excluir esta tarefa.")
 
     db.delete(db_task)
     db.commit()
@@ -323,15 +330,9 @@ def get_all_tasks(db: Session = Depends(get_db)):
     Retorna uma lista de todas as tarefas cadastradas.
     """
     tasks = db.query(models.Tarefas).all()
-    # Converte imagem BLOB para base64 em cada tarefa
+  
     result = []
     for t in tasks:
-        imagem_base64 = None
-        if t.Imagem:
-            try:
-                imagem_base64 = base64.b64encode(t.Imagem).decode('utf-8')
-            except Exception:
-                imagem_base64 = None
         result.append({
             "ID_Tarefa": t.ID_Tarefa,
             "Titulo": t.Titulo,
@@ -343,11 +344,53 @@ def get_all_tasks(db: Session = Depends(get_db)):
             "Data_Prazo": t.Data_Prazo,
             "Acao_Descricao": t.Acao_Descricao,
             "ID_Paciente": t.ID_Paciente,
-            "ID_Acao": t.ID_Acao,
             "ID_Atendente": t.ID_Atendente,
-            "Imagem": imagem_base64,
         })
     return result
+
+@app.post("/registros/", response_model=schemas.Registro, status_code=201)
+def create_registro(registro_in: schemas.RegistroCreate, db: Session = Depends(get_db)):
+    """
+    Cria um novo registro de atendimento.
+    """
+    db_registro = models.Registros(
+        ID_Acao=registro_in.ID_Acao,
+        ID_Paciente=registro_in.ID_Paciente,
+        Status=registro_in.Status,
+        ID_Atendente=registro_in.ID_Atendente,
+        Data_Criacao=date.today()
+    )
+    
+    db.add(db_registro)
+    db.commit()
+    db.refresh(db_registro)
+    
+    return db_registro
+
+@app.get("/registros/", response_model=List[schemas.RegistroDisplay])
+def get_all_registros(db: Session = Depends(get_db)):
+    results = db.query(models.Registros, models.Pacientes, models.Usuario).join(
+        models.Pacientes, models.Registros.ID_Paciente == models.Pacientes.ID_Paciente
+    ).join(
+        models.Usuario, models.Registros.ID_Atendente == models.Usuario.ID_Atendente
+    ).all()
+
+    lista_final = []
+    for reg, pac, user in results:
+        lista_final.append({
+            "ID_Registro": reg.ID_Registro,
+            "ID_Acao": reg.ID_Acao,
+            "ID_Paciente": reg.ID_Paciente,
+            "ID_Atendente": reg.ID_Atendente,
+            "Status": reg.Status,
+            "Data_Criacao": reg.Data_Criacao,
+            
+            "Nome": pac.Nome,  
+            
+            "Nome_Atendente": user.Nome 
+        })
+
+    return lista_final
 
 @app.options("/{full_path:path}")
 async def preflight_handler(full_path: str):

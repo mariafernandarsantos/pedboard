@@ -1,59 +1,86 @@
-.tasks-strip {
-    margin-top: 80px;
-}
-
+/* Estilo Antigo (Mantido por segurança) */
+.tasks-strip { margin-top: 80px; }
 .tasks-strip-inner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: #fff;
-    border-radius: 12px;
-    padding: 10px 14px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
-    border: 1px solid rgba(0, 0, 0, 0.04);
+    display: flex; align-items: center; justify-content: space-between;
+    background: #fff; border-radius: 12px; padding: 10px 14px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06); border: 1px solid rgba(0, 0, 0, 0.04);
 }
-
-.tasks-title {
-    font-size: 18px;
-    color: #111;
-}
+.tasks-title { font-size: 18px; color: #111; }
 
 .tasks-add {
-    background: #000;
-    color: #fff;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    border: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
+    background: #000; color: #fff; width: 36px; height: 36px;
+    border-radius: 50%; border: none; display: inline-flex;
+    align-items: center; justify-content: center; cursor: pointer;
 }
 
-.tasks-list {
-    margin-top: 12px;
+/* --- NOVO DESIGN (Dashboard) --- */
+
+/* Grid para Tarefas */
+.tasks-grid-container {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 16px;
+    width: 100%;
 }
 
-/* placeholder card */
+/* Design do Card de Tarefa */
+.task-card-design {
+    border-radius: 16px;
+    padding: 20px;
+    min-height: 150px;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+}
+.task-card-design:hover { transform: translateY(-2px); }
+
+/* --- CORES POR URGÊNCIA (Novas Cores) --- */
+.task-urgency-1 { background: #3b82f6; } /* Azul - Muito Baixa */
+.task-urgency-2 { background: #10b981; } /* Verde - Baixa */
+.task-urgency-3 { background: #f59e0b; } /* Amarelo - Média */
+.task-urgency-4 { background: #ef4444; } /* Vermelho - Alta */
+.task-urgency-5 { background: #7c3aed; } /* Roxo - Crítica */
+
+/* Elementos Internos */
+.task-title {
+    font-size: 18px; font-weight: bold; margin-bottom: 8px;
+}
+
+.task-desc {
+    font-size: 13px; line-height: 1.4; opacity: 0.9; margin-bottom: 12px;
+}
+
+.task-footer {
+    padding-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.2);
+    font-size: 12px; font-weight: 600;
+}
+
+/* Responsividade do grid antigo (mantido para compatibilidade se usar tasks-list) */
+.tasks-list {
+    margin-top: 12px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+}
 .tasks-list .task-card {
-    background: #f8f8f8;
-    padding: 12px;
-    border-radius: 10px;
-    min-height: 80px;
+    background: #f8f8f8; padding: 12px; border-radius: 10px; min-height: 80px;
 }
 
-@media (max-width:900px) {
-    .tasks-list {
-        grid-template-columns: repeat(2, 1fr);
-    }
+.action-btn {
+    background: rgba(255, 255, 255, 0.25);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    padding: 6px;
+    color: #fff;
+    margin-left: 5px;
+    font-size: 14px;
 }
+.action-btn:hover { background: rgba(255, 255, 255, 0.5); }
+@media (max-width:900px) { .tasks-list { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width:480px) { .tasks-list { grid-template-columns: 1fr; } }
 
-@media (max-width:480px) {
-    .tasks-list {
-        grid-template-columns: 1fr;
-    }
-}
+.action-bg-cirurgia { background: #3b82f6; } 
+.action-bg-exame    { background: #10b981; } 
+.action-bg-consulta { background: #f59e0b; } 

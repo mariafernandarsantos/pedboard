@@ -4,14 +4,16 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>PedBoard - Notas</title>
+  
   <link rel="stylesheet" href="style/Reset_css.css">
-  <!-- <link rel="stylesheet" href="style/Buscar.css"> -->
   <link rel="stylesheet" href="style/Barra_lateral.css">
-  <link rel="stylesheet" href="style/Notas.css">
-  <link rel="stylesheet" href="style/Modals.css">
+  
+  <link rel="stylesheet" href="style/Notas.css"> 
+  <link rel="stylesheet" href="style/Tarefas.css"> <link rel="stylesheet" href="style/Modals.css">
+  
+  <script src="scripts/auth-guard.js"></script>
 </head>
-<body>
-  <div id="note-modal-overlay" class="modal-overlay">
+<body style="background-color: #F0F2F5;"> <div id="note-modal-overlay" class="modal-overlay">
     <div class="modal-content">
         <button class="modal-close" id="close-note-modal">&times;</button>
         <h2>Criar notas</h2>
@@ -32,24 +34,32 @@
           
           <input type="hidden" id="note-att-id" value="0">
       
-          <button type="button" class="modal-btn btn-color-picker">Cor</button>
-      
           <button type="submit" class="modal-btn btn-submit-modal">Criar nota</button>
         </form>
-
     </div>
   </div>
+
   <main style="margin-left:120px; padding:24px;">
-    <h1>Notas</h1>
 
-    <div data-include="notes"></div>
+    <section class="dashboard-section-block">
+        <div class="section-header">
+            <div class="section-title">
+                <img src="imagens/notas.png" style="width:24px; height:24px;" alt="">
+                Minhas Notas
+            </div>
+            
+            <button class="notes-add modal-btn" style="width:32px; height:32px; border-radius:50%; background:#E4E6EB; border:none; font-weight:bold; cursor:pointer; font-size:18px;">+</button>
+        </div>
 
-    <section id="notes-list" style="margin-top:16px;">
+        <div id="notes-list" class="tasks-grid-container">
+            <p style="padding:20px; color:#888;">Carregando notas...</p>
+        </div>
     </section>
+
   </main>
 
   <script src="scripts/load-components.js"></script>
-  <script src="scripts/modals.js"></script> </body>
+  <script src="scripts/modals.js"></script> 
   <script src="scripts/notes.js"></script>
 </body>
 </html>

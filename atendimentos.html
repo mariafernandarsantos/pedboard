@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PedBoard - Atendimentos</title>
+    
+    <link rel="stylesheet" href="style/Reset_css.css">
+    <link rel="stylesheet" href="style/Barra_lateral.css">
+    
+    <link rel="stylesheet" href="style/Notas.css"> 
+    <link rel="stylesheet" href="style/Tarefas.css">
+    <link rel="stylesheet" href="style/Modals.css">
+    
+    <script src="scripts/auth-guard.js"></script>
+</head>
+<body style="background-color: #F0F2F5;">
+
+    <div id="registro-modal-overlay" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close" id="close-registro-modal">&times;</button>
+            <h2>Novo Atendimento</h2>
+            
+            <form id="create-registro-form">
+                <label for="reg-paciente">Paciente</label>
+                <select id="reg-paciente" name="ID_Paciente" required style="background:#F9F9F9; padding:12px; border-radius:12px; border:1px solid #E0E0E0; width:100%;">
+                    <option value="">Carregando pacientes...</option>
+                </select>
+
+                <label for="reg-acao">Tipo de Ação</label>
+                <select id="reg-acao" name="ID_Acao" required style="background:#F9F9F9; padding:12px; border-radius:12px; border:1px solid #E0E0E0; width:100%;">
+                    <option value="">Selecione...</option>
+                    <option value="1">Cirurgia</option>
+                    <option value="2">Exame</option>
+                    <option value="3">Consulta</option>
+                </select>
+
+                <label for="reg-status">Status</label>
+                <select id="reg-status" name="Status" style="background:#F9F9F9; padding:12px; border-radius:12px; border:1px solid #E0E0E0; width:100%;">
+                    <option value="Agendado">Agendado</option>
+                    <option value="Realizado">Realizado</option>
+                    <option value="Cancelado">Cancelado</option>
+                </select>
+
+                <button type="submit" class="modal-btn btn-submit-modal" style="margin-top:15px;">Salvar Registro</button>
+            </form>
+        </div>
+    </div>
+
+    <main style="margin-left:120px; padding:24px;">
+        
+        <section class="dashboard-section-block">
+            <div class="section-header">
+                <div class="section-title">
+                    <img src="imagens/perfil.png" style="width:24px; height:24px; object-fit: contain;" alt="">
+                    Atendimentos
+                </div>
+                
+                <button class="btn-add-registro modal-btn" style="width:32px; height:32px; border-radius:50%; background:#E4E6EB; border:none; font-weight:bold; cursor:pointer; font-size:18px;">+</button>
+            </div>
+
+            <div id="registros-list" class="tasks-grid-container">
+                <p style="padding:20px; color:#888;">Carregando atendimentos...</p>
+            </div>
+        </section>
+
+    </main>
+
+    <script src="scripts/load-components.js"></script>
+    <script src="scripts/modals.js"></script> 
+    
+    <script src="scripts/atendimentos.js"></script>
+
+</body>
+</html>

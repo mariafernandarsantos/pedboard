@@ -1,49 +1,167 @@
-/* Barra de Notas (fita simples com título e botão +) */
-.notes-strip {
-  margin-top: 80px;
-  margin-bottom: 14px;
-}
-.notes-strip-inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 12px 14px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
-  border: 1px solid rgba(0,0,0,0.04);
-  max-width: calc(100% - 24px);
-}
-.notes-title {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 18px;
-  color: #111;
-}
-.notes-icon { font-size: 20px; opacity: 0.9; }
+/* style/Notas.css */
 
-/* botão + */
+/* --- BLOCO BRANCO DO DASHBOARD (Usado em Notas e Tarefas) --- */
+.dashboard-section-block {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.section-title {
+    font-size: 24px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #333;
+}
+
+/* --- SCROLL HORIZONTAL DAS NOTAS --- */
+.notes-scroll-container {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto; /* Permite rolar para o lado se tiver muitas notas */
+    padding-bottom: 12px;
+    margin-bottom: 10px;
+    
+    /* Estilo da barra de rolagem */
+    scrollbar-width: thin; 
+    scrollbar-color: #ccc transparent;
+}
+
+/* Scrollbar para Chrome/Safari */
+.notes-scroll-container::-webkit-scrollbar { height: 8px; }
+.notes-scroll-container::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 4px; }
+
+/* --- DESIGN DO CARD DE NOTA --- */
+.note-card-design {
+    min-width: 280px;
+    max-width: 280px;
+    height: 200px;
+    border-radius: 20px;
+    padding: 20px;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    
+    /* Impede que o card encolha ou estique */
+    flex-shrink: 0; 
+    
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+    position: relative;
+}
+
+.note-card-design:hover {
+    transform: translateY(-2px);
+}
+
+/* CORES (Gradients) */
+.note-bg-purple { background: #7639b6; }
+.note-bg-red    { background: #A93226; }
+.note-bg-olive  { background: #9aaa3e; }
+.note-bg-brown  { background: #e6801a; }
+
+/* ELEMENTOS INTERNOS DO CARD */
+.note-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.note-avatar-placeholder {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 18px;
+    border: 2px solid rgba(255,255,255,0.3);
+}
+
+.note-user-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.note-user-name { font-size: 16px; font-weight: 700; }
+.note-user-handle { font-size: 12px; opacity: 0.7; }
+
+.note-body {
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.note-body p {
+    font-size: 13px;
+    line-height: 1.4;
+    opacity: 0.9;
+    /* Corta o texto se for muito longo */
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.note-footer {
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    opacity: 0.8;
+}
+
+
+/* Manter estilos antigos de botão apenas para garantir compatibilidade */
 .notes-add {
-  background: linear-gradient(#000,#000);
-  color: #fff;
-  border: none;
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  font-size: 20px;
-  line-height: 1;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+    background: linear-gradient(#E4E6EB,#E4E6EB);
+    color: #333; border: none; width: 32px; height: 32px;
+    border-radius: 50%; font-size: 20px; line-height: 1;
+    cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
 }
-.notes-add:active { transform: translateY(1px); }
-.notes-add:focus { outline: 2px solid rgba(0,0,0,0.12); outline-offset: 2px; }
 
-/* responsivo */
-@media (max-width: 640px) {
-  .notes-strip-inner { padding: 10px; border-radius: 10px; }
-  .notes-title { font-size: 16px; }
+.note-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    justify-content: flex-end; /* Alinha à direita */
+}
+
+.action-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    padding: 6px;
+    color: #fff;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-btn:hover {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+.action-btn img, .action-btn svg {
+    width: 16px;
+    height: 16px;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
 }

@@ -123,13 +123,6 @@
     opacity: 0.9;
 }
 
-/* Botão Adicionar Imagens (Tarefa) */
-.btn-add-image {
-    background: #F0F0F0;
-    color: #333;
-    border: 1px solid #E0E0E0;
-}
-
 /* Inputs de Tempo (Tarefa) */
 .time-inputs {
     display: flex;
